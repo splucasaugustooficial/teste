@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Jogo Bobo</title>
+<style>
+  body { font-family: Arial, sans-serif; text-align: center; margin-top: 50px; }
+  #target {
+    padding: 20px;
+    font-size: 18px;
+    position: absolute;
+    cursor: pointer;
+  }
+  #score { font-size: 24px; margin-top: 20px; }
+</style>
+</head>
+<body>
+<h1>Jogo Bobo</h1>
+<p>Clique no botão para ganhar pontos!</p>
+<div id="score">Pontuação: 0</div>
+<button id="target">Clique!</button>
+<script>
+  // Elemento do botão que será clicado
+  const target = document.getElementById('target');
+  // Elemento que mostra a pontuação
+  const scoreEl = document.getElementById('score');
+  // Pontuação atual
+  let score = 0;
+
+  // Move o botão para uma posição aleatória na tela
+  function moveButton() {
+    const x = Math.random() * (window.innerWidth - target.offsetWidth);
+    const y = Math.random() * (window.innerHeight - target.offsetHeight);
+    target.style.left = `${x}px`;
+    target.style.top = `${y}px`;
+  }
+
+  // Quando o botão é clicado, aumenta a pontuação e move o botão
+  target.addEventListener('click', () => {
+    score++;
+    scoreEl.textContent = `Pontuação: ${score}`;
+    moveButton();
+  });
+
+  // Coloca o botão em uma posição inicial aleatória
+  moveButton();
+</script>
+</body>
+</html>
