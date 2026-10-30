@@ -13,6 +13,10 @@ struct Track: Identifiable, Codable, Hashable {
     var playCount: Int = 0
     var lastPlayed: Date?
     var isFavorite: Bool = false
+    /// Músicas baixadas da internet: licença, página de origem e ID no catálogo.
+    var license: String?
+    var sourceURL: URL?
+    var remoteID: String?
 
     var fileURL: URL { LibraryStore.musicDirectory.appendingPathComponent(fileName) }
 

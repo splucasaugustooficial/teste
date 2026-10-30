@@ -5,6 +5,7 @@ struct RootView: View {
     @Environment(LibraryStore.self) private var library
     @Environment(PlayerController.self) private var player
     @Environment(AppRouter.self) private var router
+    @Environment(PreviewPlayer.self) private var preview
     @State private var newPlaylistName = ""
     /// Aba inicial; o argumento `-demoTab N` permite abrir outra (usado nas capturas do CI).
     @State private var selectedTab = UserDefaults.standard.integer(forKey: "demoTab")
@@ -17,6 +18,9 @@ struct RootView: View {
             LibraryView()
                 .tabItem { Label("Biblioteca", systemImage: "music.note.house.fill") }
                 .tag(0)
+            ExploreView()
+                .tabItem { Label("Explorar", systemImage: "globe") }
+                .tag(4)
             PlaylistsView()
                 .tabItem { Label("Playlists", systemImage: "music.note.list") }
                 .tag(1)
@@ -38,6 +42,10 @@ struct RootView: View {
             player.showFullPlayer = true
         }
         #endif
+        .onChange(of: player.isPlaying) { _, playing in
+            // Uma coisa de cada vez: a prévia online para quando a biblioteca toca.
+            if playing { preview.stop() }
+        }
         .sheet(isPresented: $player.showFullPlayer) {
             NowPlayingView()
         }

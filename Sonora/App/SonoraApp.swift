@@ -6,6 +6,8 @@ struct SonoraApp: App {
     @State private var library = LibraryStore()
     @State private var player = PlayerController()
     @State private var router = AppRouter()
+    @State private var downloads = DownloadManager()
+    @State private var preview = PreviewPlayer()
     @Environment(\.scenePhase) private var scenePhase
 
     var body: some Scene {
@@ -14,8 +16,11 @@ struct SonoraApp: App {
                 .environment(library)
                 .environment(player)
                 .environment(router)
+                .environment(downloads)
+                .environment(preview)
                 .tint(Theme.accent)
                 .onAppear {
+                    downloads.attach(library)
                     let library = library
                     player.onTrackStarted = { track in library.registerPlay(track.id) }
                 }

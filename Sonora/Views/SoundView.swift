@@ -162,6 +162,16 @@ struct EditTrackView: View {
                     TextField("Artista", text: $artist)
                     TextField("Álbum", text: $album)
                 }
+                if let license = track.license {
+                    Section("Licença") {
+                        LabeledContent("Licença", value: license)
+                        if let source = track.sourceURL {
+                            Link(destination: source) {
+                                Label("Página original", systemImage: "arrow.up.right.square")
+                            }
+                        }
+                    }
+                }
                 Section("Estatísticas") {
                     LabeledContent("Reproduções", value: "\(track.playCount)")
                     LabeledContent("Duração", value: track.duration.timeString)

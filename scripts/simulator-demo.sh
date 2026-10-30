@@ -116,13 +116,40 @@ shot 05-playlists
 launch -demoTab 2
 shot 06-buscar
 
-# 7. Modo escuro.
+# 7. Explorar: catálogo do Internet Archive (dados reais da API).
+launch -demoTab 4
+shot 07-explorar 12
+
+# 8. ccMixter: baixa de verdade as duas primeiras músicas pela API.
+launch -demoTab 4 -exploreSource ccMixter -demoDownload YES
+shot 08-baixando 8
+for _ in $(seq 1 30); do
+  sleep 3
+  LIB="$(xcrun simctl get_app_container "$UDID" "$BUNDLE_ID" data)/Library/Application Support/Sonora/library.json"
+  [[ $(grep -o '"remoteID"' "$LIB" 2>/dev/null | wc -l) -ge 2 ]] && break
+done
+shot 09-baixadas 2
+
+# 9. As músicas baixadas aparecem na biblioteca, com licença e origem.
+mkdir -p "$OUT/logs"
+python3 - "$LIB" > "$OUT/logs/downloads.txt" <<'PY'
+import json, sys
+tracks = json.load(open(sys.argv[1]))["tracks"]
+online = [t for t in tracks if t.get("remoteID")]
+print(f"{len(tracks)} músicas na biblioteca, {len(online)} baixadas da internet:")
+for t in online:
+    print(f"- {t['title']} | {t['artist']} | {round(t['duration'])}s | {t.get('license')} | {t.get('sourceURL')}")
+PY
+cat "$OUT/logs/downloads.txt"
+launch -demoTab 0
+shot 10-biblioteca-com-downloads
+
+# 10. Modo escuro.
 xcrun simctl ui "$UDID" appearance dark
 launch -demoPlay YES -demoAlbum "Estações"
-shot 07-player-escuro 6
+shot 11-player-escuro 6
 
 # Diagnóstico: relatórios de falha e log do app, se houver.
-mkdir -p "$OUT/logs"
 cp ~/Library/Logs/DiagnosticReports/Sonora* "$OUT/logs/" 2>/dev/null || true
 xcrun simctl spawn "$UDID" log show --last 10m --style compact \
   --predicate 'process == "Sonora"' > "$OUT/logs/sonora.log" 2>&1 || true

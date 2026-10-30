@@ -14,7 +14,7 @@ final class LibraryStore {
     var toast: String?
     @ObservationIgnored private var isScanning = false
 
-    static let audioExtensions: Set<String> = [
+    nonisolated static let audioExtensions: Set<String> = [
         "mp3", "m4a", "m4b", "aac", "wav", "aif", "aiff", "aifc", "flac", "caf", "mp4",
     ]
 
@@ -63,7 +63,7 @@ final class LibraryStore {
             let files = Self.audioFiles(in: url)
             for (offset, file) in files.enumerated() {
                 importStatus = "Importando \(offset + 1) de \(files.count)…"
-                if await addFile(at: file, move: false) { added += 1 } else { skipped += 1 }
+                if case .added = await addFile(at: file, move: false) { added += 1 } else { skipped += 1 }
             }
             if scoped { url.stopAccessingSecurityScopedResource() }
             if url.path.contains("/Inbox/") { try? FileManager.default.removeItem(at: url) }
@@ -84,7 +84,7 @@ final class LibraryStore {
         var added = 0, skipped = 0
         for (offset, file) in files.enumerated() {
             importStatus = "Importando \(offset + 1) de \(files.count)…"
-            if await addFile(at: file, move: true) { added += 1 } else { skipped += 1 }
+            if case .added = await addFile(at: file, move: true) { added += 1 } else { skipped += 1 }
         }
         finishImport(added: added, skipped: skipped)
     }
@@ -112,25 +112,63 @@ final class LibraryStore {
             .sorted { $0.path.localizedStandardCompare($1.path) == .orderedAscending }
     }
 
-    private func addFile(at source: URL, move: Bool) async -> Bool {
+    /// Guarda na biblioteca uma música baixada, com os dados e a licença informados pela API.
+    func importDownload(_ file: URL, from online: OnlineTrack, artwork: Data?) async -> AddResult {
+        let result = await addFile(at: file, move: true, metadata: ImportMetadata(
+            title: online.title,
+            artist: online.artist,
+            album: online.album,
+            trackNumber: online.trackNumber,
+            artwork: artwork,
+            license: online.license,
+            sourceURL: online.pageURL ?? online.downloadURL,
+            remoteID: online.id
+        ))
+        try? FileManager.default.removeItem(at: file)
+        if case .added = result { save() }
+        return result
+    }
+
+    func contains(remoteID: String) -> Bool {
+        tracks.contains { $0.remoteID == remoteID }
+    }
+
+    enum AddResult {
+        case added, duplicate, unsupported
+    }
+
+    struct ImportMetadata {
+        var title: String
+        var artist: String
+        var album: String
+        var trackNumber: Int?
+        var artwork: Data?
+        var license: String?
+        var sourceURL: URL?
+        var remoteID: String?
+    }
+
+    private func addFile(at source: URL, move: Bool, metadata: ImportMetadata? = nil) async -> AddResult {
         let fm = FileManager.default
         // Só aceita o que o motor de áudio consegue realmente tocar.
-        guard let audioFile = try? AVAudioFile(forReading: source) else { return false }
+        guard let audioFile = try? AVAudioFile(forReading: source) else { return .unsupported }
         let meta = await MetadataReader.read(url: source)
         let fileDuration = Double(audioFile.length) / audioFile.processingFormat.sampleRate
         let duration = meta.duration > 0 ? meta.duration : fileDuration
 
         let fallbackTitle = source.deletingPathExtension().lastPathComponent
-        let title = meta.title.nonEmpty ?? fallbackTitle
-        let artist = meta.artist.nonEmpty ?? "Artista desconhecido"
-        let album = meta.album.nonEmpty ?? "Álbum desconhecido"
+        let title = metadata?.title.nonEmpty ?? meta.title.nonEmpty ?? fallbackTitle
+        let artist = metadata?.artist.nonEmpty ?? meta.artist.nonEmpty ?? "Artista desconhecido"
+        let album = metadata?.album.nonEmpty ?? meta.album.nonEmpty ?? "Álbum desconhecido"
+        let trackNumber = metadata?.trackNumber ?? meta.trackNumber
 
         let isDuplicate = tracks.contains {
-            $0.title == title && $0.artist == artist && abs($0.duration - duration) < 1.5
+            ($0.remoteID != nil && $0.remoteID == metadata?.remoteID)
+                || ($0.title == title && $0.artist == artist && abs($0.duration - duration) < 1.5)
         }
         if isDuplicate {
             if move { try? fm.removeItem(at: source) }
-            return false
+            return .duplicate
         }
 
         let id = UUID()
@@ -143,11 +181,11 @@ final class LibraryStore {
                 try fm.copyItem(at: source, to: destination)
             }
         } catch {
-            return false
+            return .unsupported
         }
 
         var hasArtwork = false
-        if let data = meta.artwork, let image = UIImage(data: data) {
+        if let data = meta.artwork ?? metadata?.artwork, let image = UIImage(data: data) {
             let scale = min(1, 600 / max(image.size.width, image.size.height, 1))
             let size = CGSize(width: image.size.width * scale, height: image.size.height * scale)
             let resized = image.preparingThumbnail(of: size) ?? image
@@ -163,11 +201,14 @@ final class LibraryStore {
             title: title,
             artist: artist,
             album: album,
-            trackNumber: (meta.trackNumber ?? 0) > 0 ? meta.trackNumber : nil,
+            trackNumber: (trackNumber ?? 0) > 0 ? trackNumber : nil,
             duration: duration,
-            hasArtwork: hasArtwork
+            hasArtwork: hasArtwork,
+            license: metadata?.license,
+            sourceURL: metadata?.sourceURL,
+            remoteID: metadata?.remoteID
         ))
-        return true
+        return .added
     }
 
     // MARK: - Faixas
