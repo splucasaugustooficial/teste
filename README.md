@@ -32,3 +32,21 @@ Ou configure seus agentes com `npx rea-agents setup`.
 Requisitos: Node.js 22.x (>= 22.23.4), 24.x (>= 24.22.1) ou 26.12.1+, com npm.
 Análise de binários nativos também precisa de Hopper, Ghidra, IDA ou Kuna; veja o
 [guia de instalação](https://github.com/morluto/rea/blob/main/docs/installation.md).
+
+## Skill `craft`
+
+`.claude/skills/craft/` é uma skill do Claude Code que aplica um fluxo de
+engenharia de nível sênior a qualquer mudança de código: entender → provar o
+bug → planejar → implementar o mínimo → verificar com as checagens reais →
+relatar com honestidade. Ela é carregada automaticamente neste projeto; para
+forçar, use `/craft`.
+
+O script incluído descobre os comandos de lint, typecheck e teste do projeto:
+
+```bash
+bash .claude/skills/craft/scripts/checks.sh        # lista os comandos
+bash .claude/skills/craft/scripts/checks.sh --run  # executa todos
+```
+
+Para usar a skill em todos os seus projetos, copie a pasta para
+`~/.claude/skills/craft/`.
