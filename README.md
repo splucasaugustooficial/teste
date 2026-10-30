@@ -12,6 +12,14 @@ Feito em SwiftUI + AVAudioEngine, só com frameworks da Apple (zero dependência
 
 **Preço:** R$ 0 · **Anúncios:** nenhum · **Conta:** não precisa · **Internet:** não precisa · **Dados coletados:** nenhum
 
+- **Explorar (baixar músicas grátis):** busca em catálogos que liberam download gratuito e legal,
+  com prévia por streaming, progresso, "baixar álbum" e a licença guardada em cada faixa:
+  - [Internet Archive](https://archive.org/details/audio): só itens em Creative Commons, domínio público ou da Live Music Archive;
+  - [ccMixter](https://ccmixter.org): músicas e remixes em Creative Commons;
+  - [Jamendo](https://www.jamendo.com): 600 mil+ músicas independentes. Precisa de um *Client ID* gratuito,
+    criado em [devportal.jamendo.com](https://devportal.jamendo.com) e colado no próprio app.
+
+  Não há integração com YouTube, Spotify e afins: baixar de lá viola direitos autorais e os termos de uso.
 - **Biblioteca:** músicas, álbuns, artistas, favoritas, mais tocadas, adicionadas e tocadas recentemente, ordenação e busca.
 - **Importação:** arquivos ou **pastas inteiras** do app Arquivos (iCloud Drive, Google Drive, OneDrive, pendrive), compartilhamento de outros apps e arraste-e-solte pelo Finder/iTunes no computador. Lê título, artista, álbum, número da faixa e capa (ID3/iTunes), e ignora duplicadas.
 - **Player:** fila editável (tocar a seguir, adicionar, reordenar, remover), aleatório inteligente, repetir uma/todas, gestos no mini player (deslize para trocar de faixa), AirPlay/Bluetooth, volume.
