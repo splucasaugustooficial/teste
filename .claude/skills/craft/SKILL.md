@@ -8,93 +8,114 @@ description: Fluxo de engenharia de nível sênior para qualquer mudança de có
 Código bom não é o que parece inteligente: é o que **funciona, é verificado e
 qualquer pessoa entende amanhã**. Este fluxo existe porque os erros mais caros
 de um agente são sempre os mesmos — corrigir o problema errado, mudar demais,
-declarar vitória sem rodar nada, e esconder o que deu errado. Cada fase abaixo
+declarar vitória sem rodar nada e esconder o que deu errado. Cada fase abaixo
 fecha uma dessas portas.
 
-Escale o rigor ao tamanho da tarefa: um typo não precisa de plano; uma mudança
-em fluxo de pagamento precisa de tudo. Na dúvida, prefira o rigor.
+## Calibre o rigor
+
+| Tarefa | Exemplo | Fases |
+|---|---|---|
+| Trivial | typo, texto, renomear variável local | 4 → 5 (só as checagens rápidas) → 6 |
+| Normal | feature pequena, bug com causa clara | todas, planos curtos |
+| Crítica | dinheiro, auth, dados, migração, API pública | todas, plano confirmado com o usuário antes de codar |
+
+Na dúvida entre dois níveis, escolha o mais rigoroso.
 
 ## 1. Entender (antes de editar qualquer coisa)
 
 - Reformule o pedido em uma frase: *o que deve ser verdade quando eu terminar?*
   Se não conseguir, a tarefa ainda está ambígua — resolva lendo o código; só
   pergunte ao usuário o que o código não responde.
-- Leia o código ao redor do ponto de mudança, os chamadores e os testes
-  existentes. Procure convenções: nomes, tratamento de erro, estilo de teste,
-  densidade de comentários. Seu código deve parecer escrito pela mesma pessoa.
-- Descubra as checagens reais do projeto:
+- Leia o código ao redor do ponto de mudança, quem o chama e os testes
+  existentes. Absorva as convenções: nomes, tratamento de erro, estilo de
+  teste, densidade de comentários. Seu código deve parecer escrito pela mesma
+  pessoa.
+- Descubra as checagens reais do projeto e rode-as **antes** de mudar algo,
+  para conhecer o estado de partida:
 
   ```bash
-  bash .claude/skills/craft/scripts/checks.sh
+  bash .claude/skills/craft/scripts/checks.sh          # lista, por categoria
+  bash .claude/skills/craft/scripts/checks.sh --run    # executa todas
   ```
 
-  O script lê `package.json`, `pyproject.toml`, `Makefile`, `Cargo.toml`,
-  `go.mod`, workflows de CI etc. e lista os comandos de lint, typecheck e teste.
-  Rode-os **antes** de mudar algo para saber o estado de partida — uma falha
-  pré-existente não é sua, mas precisa ser reportada.
+  O script lê `package.json`, `pyproject.toml`, `Cargo.toml`, `go.mod`,
+  `Makefile`, `deno.json`, `.sln`, `mix.exs` e outros, marca ferramentas não
+  instaladas e mostra o que o CI roda. Uma falha pré-existente não é sua — mas
+  anote-a, porque ela entra no relatório.
 
 ## 2. Provar (bugs e falhas de CI)
 
 Não corrija o que você não reproduziu.
 
-- Escreva o teste (ou comando) que falha **pelo motivo certo** antes do fix.
-- Encontre a causa raiz, não o sintoma: pergunte "por quê?" até chegar a algo
-  que, mudado, torna o bug impossível — não só improvável.
+- Escreva o teste ou comando que falha **pelo motivo certo** antes do fix.
+- Encontre a causa raiz, não o sintoma. O método está em
+  [references/debugging.md](references/debugging.md) — leia-o quando a causa
+  não for óbvia em poucos minutos ou quando o primeiro fix não funcionar.
 - Se não conseguir reproduzir, diga isso explicitamente e explique o que o fix
   pressupõe.
 
-## 3. Planejar (mudanças com mais de um arquivo ou decisão de design)
+## 3. Planejar (mais de um arquivo ou alguma decisão de design)
 
-Antes de codar, escreva para si: arquivos tocados, a abordagem e a alternativa
-descartada (com o porquê). Se o plano exige mudar uma API pública, um schema
-ou algo difícil de reverter, confirme com o usuário primeiro.
+Escreva para si: arquivos tocados, a abordagem e a alternativa descartada (com
+o porquê). Mudou API pública, schema, formato de dados ou algo difícil de
+reverter? Confirme com o usuário primeiro.
 
 ## 4. Implementar — o mínimo correto
 
 - **Diff mínimo.** Só o que a tarefa exige. Refatorações "aproveitando a
-  viagem", renomes e reformatação de arquivo inteiro viram PR separado.
+  viagem", renomes e reformatação de arquivo inteiro ficam para outro PR.
 - **Reuse antes de criar.** Procure um helper existente antes de escrever um.
 - **Erros explícitos.** Nada de `catch` vazio, `|| true` ou valor default que
-  esconde falha. Se algo pode falhar, trate ou propague com contexto.
-- **Sem segredos, sem gambiarras de teste.** Nunca desative, pule ou afrouxe um
-  teste para ficar verde. Nunca escreva credenciais em código.
-- **Bordas.** Pense em vazio, nulo, enorme, concorrente, Unicode, fuso horário
-  e falha de rede — o que se aplicar.
+  esconde falha. Trate, ou propague com contexto.
+- **Bordas.** Vazio, nulo, enorme, negativo, duplicado, concorrente, Unicode,
+  fuso horário, falha de rede — o que se aplicar.
+- **Nunca** desative, pule ou afrouxe um teste para ficar verde. **Nunca**
+  escreva segredos em código, log ou teste.
 - Comentários explicam *por quê*, nunca *o quê*.
+
+Itere em ciclos curtos: mude um pouco, rode as checagens rápidas
+(`checks.sh --run --only format,lint,type --fail-fast`), continue.
 
 ## 5. Verificar — evidência, não esperança
 
-1. Rode as checagens descobertas na fase 1 (`checks.sh --run` roda todas).
-2. Rode o teste que provava o bug: agora ele passa.
+1. Rode **todas** as checagens (`checks.sh --run`). Checagem *pulada* por
+   ferramenta ausente não é checagem aprovada: instale a ferramenta ou declare
+   no relatório que aquilo não foi verificado.
+2. Rode o teste que provava o bug: agora ele passa. Reverta o fix por um
+   instante se tiver dúvida de que o teste realmente o cobre.
 3. Exercite a mudança de verdade quando der (rode o CLI, suba o servidor, abra
    a página). Teste passando não prova que a feature funciona.
-4. **Revisão adversarial do próprio diff** (`git diff`): leia como um revisor
-   que quer rejeitar. Use o checklist em
-   [references/review-checklist.md](references/review-checklist.md).
+4. **Revise o próprio diff como adversário** (`git diff`), com o
+   [checklist de revisão](references/review-checklist.md).
 
-Se algo falhar, volte à fase certa. Não vá para a fase 6 com vermelho
-desconhecido.
+Algo falhou? Volte à fase certa. Não vá para a fase 6 com vermelho que você
+não sabe explicar.
 
 ## 6. Entregar e relatar
 
-- Commit com mensagem que explica o **porquê** (o diff já mostra o quê).
-  Siga a convenção do repositório (veja `git log`).
-- Relatório final curto e honesto:
-  - **O que mudou** e por quê, com `arquivo:linha`.
-  - **Como foi verificado** — os comandos rodados e o resultado real.
-  - **O que não foi feito ou verificado** e qualquer falha pré-existente.
-  - **Riscos** ou decisões que o usuário deveria revisar.
+- Commit com mensagem que explica o **porquê** (o diff já mostra o quê),
+  seguindo a convenção do repositório (`git log --oneline -10`).
+- Git com cuidado: nunca reescreva histórico de branch alheio, nunca use
+  `--force` sem `--with-lease`, olhe o alvo antes de apagar ou sobrescrever.
+- Relatório final curto e honesto, neste formato:
+
+  ```markdown
+  **Mudança:** <o que mudou e por quê, com arquivo:linha>
+  **Verificação:** <comandos rodados → resultado real (ex.: 42 testes ok)>
+  **Não verificado:** <checagens puladas, cenários não testados, falhas pré-existentes>
+  **Para revisar:** <decisões ou riscos que pedem um olho humano>
+  ```
 
 Nunca diga "deve funcionar". Diga o que rodou e o que viu. Se pulou uma etapa,
 diga que pulou.
 
-## Antipadrões (pare se perceber que está fazendo)
+## Sinais de alerta — pare se perceber que está fazendo
 
 | Sinal | Correção |
 |---|---|
-| Editando antes de ler os chamadores | Volte à fase 1 |
+| Editando antes de ler quem chama o código | Volte à fase 1 |
 | "Corrigi" sem ter visto o erro acontecer | Volte à fase 2 |
+| Terceira tentativa do mesmo tipo de fix | Pare e siga o guia de depuração |
 | Diff tocando arquivos que a tarefa não menciona | Reverta o excesso |
-| Terceira tentativa do mesmo tipo de fix | Pare e reexamine a causa raiz |
-| Teste ajustado para aceitar o comportamento novo sem justificar | Questione se o comportamento está certo |
+| Teste ajustado para aceitar o comportamento novo | Justifique, ou o bug é seu |
 | Relatório sem nenhum comando executado | Você não verificou — verifique |

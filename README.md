@@ -41,12 +41,20 @@ bug → planejar → implementar o mínimo → verificar com as checagens reais 
 relatar com honestidade. Ela é carregada automaticamente neste projeto; para
 forçar, use `/craft`.
 
-O script incluído descobre os comandos de lint, typecheck e teste do projeto:
+O script incluído descobre os comandos de formatação, lint, typecheck, build e
+teste do projeto (Node, Deno, Python, Rust, Go, .NET, Java, Elixir, Swift,
+Ruby, PHP e Makefile):
 
 ```bash
-bash .claude/skills/craft/scripts/checks.sh        # lista os comandos
-bash .claude/skills/craft/scripts/checks.sh --run  # executa todos
+bash .claude/skills/craft/scripts/checks.sh                  # lista, por categoria
+bash .claude/skills/craft/scripts/checks.sh --run            # executa todas
+bash .claude/skills/craft/scripts/checks.sh --run --only lint,type --fail-fast
+bash .claude/skills/craft/scripts/checks.sh --json           # para automação
 ```
+
+Checagens cuja ferramenta não está instalada aparecem como **puladas**, nunca
+como aprovadas. Os testes do script rodam no CI (`.github/workflows/craft.yml`)
+e localmente com `bash .claude/skills/craft/tests/test_checks.sh`.
 
 Para usar a skill em todos os seus projetos, copie a pasta para
 `~/.claude/skills/craft/`.
