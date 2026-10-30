@@ -1,5 +1,40 @@
 # teste
 
+## Tino, o banco de IA (site conceitual)
+
+`site/` é a landing page da Tino, um banco digital brasileiro fictício gerido
+por IA. A tese de negócio: o lucro vem do custo de servir perto de zero (IA no
+lugar de agência e call center), não de tarifa. Por isso a Tino cobra R$ 0 e
+ainda tem margem, e mostra a cada cliente um "recibo de lucro" mensal.
+
+O que tem na página:
+
+- **Chat de demonstração** com a cliente de exemplo Marina: compra cabe no
+  bolso?, negociação de contas, rendimento, rotativo, quanto a Tino lucra.
+- **Simulador** de quanto o banco atual custa por ano (tarifas, saldo parado,
+  juros do rotativo com o teto da Lei 14.690/2023) contra o que a Tino lucraria.
+- **Modelo de negócio**: receita por cliente em 7 linhas, custo para servir,
+  unit economics (ARPU, margem, LTV, CAC, payback) e seis ideias de receita
+  fora da caixa (compra coletiva, dividendo de dados, Tino Inside, etc.).
+- Planos (Tino, Tino Pro, Tino Negócios), segurança e lista de espera.
+
+HTML, CSS e JS puros, sem build. Para abrir:
+
+```bash
+python3 -m http.server -d site 8000   # depois acesse http://localhost:8000
+```
+
+Os cálculos ficam em `site/calc.js` (funções puras, usadas pela página e pelos
+testes). Premissas como CDI, spread e CET estão em `PREMISSAS` no topo do
+arquivo. Testes:
+
+```bash
+npm test
+```
+
+Todos os números, taxas e projeções são ilustrativos. A Tino não é instituição
+financeira.
+
 ## REA (Reverse Engineer Anything)
 
 Este repositório usa o REA oficial, publicado em

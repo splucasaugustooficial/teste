@@ -1,0 +1,413 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Tino Banco</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<meta name="description" content="Tino, o banco brasileiro gerido por IA: zero tarifa, negociador automático de contas, fim do rotativo e transparência sobre quanto o banco lucra com você.">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%231d46d1'/%3E%3Cpath d='M16 0A16 16 0 0 1 0 16M32 16A16 16 0 0 0 16 32' fill='none' stroke='%23fff' stroke-width='3.5'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Anybody:wdth,wght@75..150,400..900&family=Martian+Mono:wght@400;500&family=Onest:wght@400;500;600;700&display=swap">
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<a class="pular" href="#conteudo">Pular para o conteúdo</a>
+
+<header class="topo">
+  <div class="topo__in">
+    <a class="marca" href="#inicio" aria-label="Tino, voltar ao início">
+      <svg class="marca__tile" viewBox="0 0 32 32" aria-hidden="true"><rect width="32" height="32" rx="7"/><path d="M16 0A16 16 0 0 1 0 16M32 16A16 16 0 0 0 16 32"/></svg>
+      <span class="marca__nome">tino</span>
+    </a>
+    <button class="menu-btn" id="menu-btn" type="button" aria-expanded="false" aria-controls="menu">Menu</button>
+    <nav class="menu" id="menu" aria-label="Principal">
+      <a href="#ia">O que a IA faz</a>
+      <a href="#simulador">Simulador</a>
+      <a href="#planos">Planos</a>
+      <a href="#lucro">Como lucramos</a>
+      <a href="#seguranca">Segurança</a>
+      <a class="btn btn--primario btn--peq" href="#lista">Quero minha conta</a>
+    </nav>
+  </div>
+</header>
+
+<main id="conteudo">
+
+  <section class="hero" id="inicio">
+    <canvas class="hero__azulejo" id="azulejo" aria-hidden="true"></canvas>
+    <div class="hero__in">
+      <div class="hero__texto">
+        <p class="eyebrow">Banco digital brasileiro · gerido por IA</p>
+        <h1 class="hero__titulo">O banco que tem <em>tino</em>.</h1>
+        <p class="hero__lead">A Tino é uma IA que cuida do seu dinheiro 24 horas por dia. Ela corta tarifas, negocia suas contas, tira você do rotativo e põe cada real parado para render. E mostra, todo mês, quanto lucrou com você.</p>
+        <div class="hero__ctas">
+          <a class="btn btn--primario" href="#lista">Entrar na lista de espera</a>
+          <a class="btn btn--linha" href="#simulador">Calcular quanto economizo</a>
+        </div>
+        <ul class="hero__fatos">
+          <li><strong>R$ 0</strong><span>de tarifa e de anuidade</span></li>
+          <li><strong>100% do CDI</strong><span>na Caixinha, desde o primeiro real</span></li>
+          <li><strong>20%</strong><span>do que a IA economizar para você, e só se economizar</span></li>
+        </ul>
+      </div>
+
+      <div class="chat" id="chat">
+        <div class="chat__topo">
+          <svg class="chat__avatar" viewBox="0 0 32 32" aria-hidden="true"><rect width="32" height="32" rx="16"/><path d="M16 0A16 16 0 0 1 0 16M32 16A16 16 0 0 0 16 32"/></svg>
+          <div>
+            <p class="chat__nome">Tino</p>
+            <p class="chat__status"><span class="ponto" aria-hidden="true"></span> online · responde em 1 segundo</p>
+          </div>
+          <span class="selo">Demonstração</span>
+        </div>
+        <ol class="chat__log" id="chat-log" aria-live="polite" aria-label="Conversa com a Tino">
+          <li class="msg msg--tino">Bom dia, Marina. Fechei seu mês: entraram R$ 4.800,00 e saíram R$ 3.912,00. Guardei a sobra de R$ 888,00 na Caixinha “Viagem para Recife”.</li>
+          <li class="msg msg--tino">Achei R$ 61,80 por mês em assinaturas que você não abre há 60 dias. Quer que eu cancele?</li>
+          <li class="msg msg--voce">Cancela, por favor.</li>
+          <li class="msg msg--tino">Cancelado. São R$ 741,60 por ano de volta no seu bolso. Essa eu não cobro.</li>
+        </ol>
+        <div class="chat__sugestoes" id="chat-sugestoes" aria-label="Perguntas sugeridas">
+          <button type="button" class="chip">Posso comprar um celular de R$ 3.000?</button>
+          <button type="button" class="chip">Negocia minhas contas</button>
+          <button type="button" class="chip">Quanto rendem R$ 5 mil?</button>
+          <button type="button" class="chip">Caí no rotativo do cartão</button>
+          <button type="button" class="chip">Quanto a Tino lucra comigo?</button>
+        </div>
+        <form class="chat__form" id="chat-form" autocomplete="off">
+          <label class="sr" for="chat-input">Escreva para a Tino</label>
+          <input id="chat-input" name="mensagem" type="text" placeholder="Pergunte sobre gastos, contas, dívidas…" maxlength="200">
+          <button class="btn btn--primario" type="submit">Enviar</button>
+        </form>
+        <p class="chat__nota">Conversa simulada com dados de exemplo. Nada do que você digita sai do seu navegador.</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="secao" id="ia" aria-labelledby="ia-titulo">
+    <div class="secao__in">
+      <header class="secao__cab">
+        <p class="eyebrow">O que a IA faz</p>
+        <h2 id="ia-titulo">Um gerente que trabalha só para você, de madrugada inclusive.</h2>
+        <p class="secao__lead">Cada recurso diz o que você ganha e como a Tino ganha. Se a gente não consegue explicar o lucro numa linha, o recurso não entra no app.</p>
+      </header>
+      <div class="recursos">
+        <article class="recurso">
+          <h3>Piloto automático</h3>
+          <p>Separa o dinheiro dos boletos no dia do salário, paga cada conta na data que não gera multa e manda a sobra para a Caixinha rendendo 100% do CDI.</p>
+          <p class="recurso__ganho"><span>A Tino ganha</span> o spread sobre o saldo que fica investido.</p>
+        </article>
+        <article class="recurso">
+          <h3>Negociador</h3>
+          <p>Conversa com operadora, seguradora e academia para baixar sua conta, usando como argumento o preço que outros clientes da sua região já pagam.</p>
+          <p class="recurso__ganho"><span>A Tino ganha</span> 20% da economia do primeiro ano. Sem economia, sem cobrança.</p>
+        </article>
+        <article class="recurso">
+          <h3>Fim do rotativo</h3>
+          <p>Se a fatura não fecha, a IA troca o rotativo por um parcelamento com CET de 3,9% a.m., mostrado antes de você aceitar.</p>
+          <p class="recurso__ganho"><span>A Tino ganha</span> juros menores, mas com muito menos calote.</p>
+        </article>
+        <article class="recurso">
+          <h3>Score vivo</h3>
+          <p>O limite olha o que entra no seu Pix, não só o seu CPF. Autônomos, MEIs e quem recebe por aplicativo ganham crédito pelo que movimentam.</p>
+          <p class="recurso__ganho"><span>A Tino ganha</span> juros de um público que os bancos grandes recusam.</p>
+        </article>
+        <article class="recurso">
+          <h3>Caça-tarifas</h3>
+          <p>Encontra assinatura esquecida, tarifa cobrada por outro banco e seguro duplicado no cartão. Você aprova o cancelamento com um toque.</p>
+          <p class="recurso__ganho"><span>A Tino ganha</span> a sua conta principal. Este recurso é de graça.</p>
+        </article>
+        <article class="recurso">
+          <h3>Imposto de Renda pronto</h3>
+          <p>A declaração chega montada em abril, com rendimentos, despesas médicas e dependentes que a IA organizou durante o ano.</p>
+          <p class="recurso__ganho"><span>A Tino ganha</span> a assinatura do Tino Pro, onde o recurso está incluído.</p>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <section class="secao secao--faixa" id="simulador" aria-labelledby="sim-titulo">
+    <div class="secao__in">
+      <header class="secao__cab">
+        <p class="eyebrow">Simulador</p>
+        <h2 id="sim-titulo">Quanto o seu banco atual te custa por ano?</h2>
+        <p class="secao__lead">Preencha com os números do seu extrato. O cálculo roda no seu navegador e já vem com um perfil de exemplo.</p>
+      </header>
+      <div class="sim">
+        <form class="sim__form" id="sim-form" novalidate>
+          <fieldset>
+            <legend>No seu banco hoje</legend>
+            <div class="campo">
+              <label for="sim-tarifa">Pacote de tarifas por mês</label>
+              <div class="campo__input"><span>R$</span><input id="sim-tarifa" inputmode="decimal" value="39,90"></div>
+            </div>
+            <div class="campo">
+              <label for="sim-anuidade">Anuidade do cartão por ano</label>
+              <div class="campo__input"><span>R$</span><input id="sim-anuidade" inputmode="decimal" value="420"></div>
+            </div>
+            <div class="campo">
+              <label for="sim-saldo">Saldo parado na conta corrente</label>
+              <div class="campo__input"><span>R$</span><input id="sim-saldo" inputmode="decimal" value="3.000"></div>
+            </div>
+            <div class="campo">
+              <label for="sim-divida">Dívida no rotativo do cartão</label>
+              <div class="campo__input"><span>R$</span><input id="sim-divida" inputmode="decimal" value="1.500"></div>
+            </div>
+            <div class="campo">
+              <label for="sim-gasto">Gasto mensal no cartão</label>
+              <div class="campo__input"><span>R$</span><input id="sim-gasto" inputmode="decimal" value="2.500"></div>
+            </div>
+          </fieldset>
+          <fieldset>
+            <legend>Premissas</legend>
+            <div class="campo">
+              <label for="sim-juros">Juros do rotativo do seu banco</label>
+              <div class="campo__input"><input id="sim-juros" inputmode="decimal" value="13"><span>% a.m.</span></div>
+            </div>
+            <div class="campo">
+              <label for="sim-cdi">CDI</label>
+              <div class="campo__input"><input id="sim-cdi" inputmode="decimal" value="12,4"><span>% a.a.</span></div>
+            </div>
+          </fieldset>
+          <p class="sim__erro" id="sim-erro" role="alert" hidden></p>
+        </form>
+
+        <div class="sim__resultado" aria-live="polite">
+          <p class="sim__rotulo">Você deixaria de perder</p>
+          <p class="sim__total"><span id="res-economia">R$ 0</span><small>por ano</small></p>
+          <dl class="sim__linhas">
+            <div><dt>Tarifas e anuidade</dt><dd id="res-tarifas">–</dd></div>
+            <div><dt>Rendimento do saldo parado, já com IR</dt><dd id="res-rendimento">–</dd></div>
+            <div><dt>Juros evitados ao trocar o rotativo pelo parcelamento</dt><dd id="res-juros">–</dd></div>
+          </dl>
+          <div class="placar" aria-label="Comparação entre o que você economiza e o que a Tino lucra">
+            <div class="placar__linha">
+              <span class="placar__rotulo">Você economiza</span>
+              <span class="placar__trilho"><span class="placar__barra placar__barra--voce" id="barra-voce"></span></span>
+              <span class="placar__valor" id="placar-voce">–</span>
+            </div>
+            <div class="placar__linha">
+              <span class="placar__rotulo">A Tino lucra</span>
+              <span class="placar__trilho"><span class="placar__barra placar__barra--tino" id="barra-tino"></span></span>
+              <span class="placar__valor" id="placar-tino">–</span>
+            </div>
+          </div>
+          <p class="sim__frase" id="res-frase"></p>
+          <details class="sim__detalhe">
+            <summary>De onde vem o lucro da Tino nesse perfil</summary>
+            <dl class="sim__linhas sim__linhas--mini">
+              <div><dt>Spread sobre o saldo na Caixinha (1,8% a.a.)</dt><dd id="res-lucro-caixinha">–</dd></div>
+              <div><dt>Intercâmbio do cartão (1,1% do gasto)</dt><dd id="res-lucro-cartao">–</dd></div>
+              <div><dt>Margem dos juros do parcelamento (40%)</dt><dd id="res-lucro-credito">–</dd></div>
+            </dl>
+          </details>
+        </div>
+      </div>
+      <p class="nota">Estimativa ilustrativa. O rotativo considera o teto de juros e encargos de 100% da dívida (Lei 14.690/2023). O IR da Caixinha segue a tabela regressiva da renda fixa.</p>
+    </div>
+  </section>
+
+  <section class="secao" id="planos" aria-labelledby="planos-titulo">
+    <div class="secao__in">
+      <header class="secao__cab">
+        <p class="eyebrow">Planos</p>
+        <h2 id="planos-titulo">De graça para quem quer conta. Barato para quem quer piloto.</h2>
+      </header>
+      <div class="planos">
+        <article class="plano">
+          <h3>Tino</h3>
+          <p class="plano__preco"><strong>R$ 0</strong><span>para sempre</span></p>
+          <ul>
+            <li>Conta, Pix ilimitado e cartão sem anuidade</li>
+            <li>Caixinhas com 100% do CDI e liquidez diária</li>
+            <li>Piloto automático e caça-tarifas</li>
+            <li>Negociador com taxa de sucesso de 20%</li>
+            <li>Fim do rotativo, com CET mostrado antes</li>
+          </ul>
+          <a class="btn btn--linha" href="#lista">Abrir conta grátis</a>
+        </article>
+        <article class="plano plano--destaque">
+          <p class="plano__selo">Grátis com R$ 15 mil investidos</p>
+          <h3>Tino Pro</h3>
+          <p class="plano__preco"><strong>R$ 19,90</strong><span>por mês</span></p>
+          <ul>
+            <li>Tudo do plano Tino</li>
+            <li>Negociador com taxa de 10%</li>
+            <li>1% de cashback no cartão</li>
+            <li>Imposto de Renda pronto em abril</li>
+            <li>Câmbio com spread de 1% e alerta de cotação</li>
+          </ul>
+          <a class="btn btn--primario" href="#lista">Quero o Pro</a>
+        </article>
+        <article class="plano">
+          <h3>Tino Negócios</h3>
+          <p class="plano__preco"><strong>R$ 49</strong><span>por mês, para MEI e PME</span></p>
+          <ul>
+            <li>CFO de IA com fluxo de caixa previsto para 90 dias</li>
+            <li>Cobrança automática por Pix e boleto</li>
+            <li>Conciliação e emissão de NFS-e</li>
+            <li>Antecipação de recebíveis com taxa na tela</li>
+            <li>Maquininha no celular, sem aluguel</li>
+          </ul>
+          <a class="btn btn--linha" href="#lista">Falar com a Tino Negócios</a>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <section class="secao secao--faixa" id="lucro" aria-labelledby="lucro-titulo">
+    <div class="secao__in">
+      <header class="secao__cab">
+        <p class="eyebrow">Modelo de negócio</p>
+        <h2 id="lucro-titulo">Como a Tino lucra, e por que a gente conta.</h2>
+        <p class="secao__lead">Banco grande cobra tarifa porque agência, gerente e call center custam caro. A Tino troca esse custo por IA. Com o custo de servir perto de R$ 2 por cliente, dá para cobrar menos do cliente e ainda lucrar mais por cliente.</p>
+      </header>
+
+      <div class="lucro-topo">
+        <div class="recibo" aria-labelledby="recibo-titulo">
+          <p class="recibo__marca">tino · recibo de lucro</p>
+          <h3 id="recibo-titulo" class="recibo__titulo">O que a Tino ganhou com a Marina no último mês</h3>
+          <table class="recibo__tabela" id="recibo-tabela">
+            <tbody></tbody>
+            <tfoot><tr><th scope="row">Total</th><td id="recibo-total">–</td></tr></tfoot>
+          </table>
+          <p class="recibo__rodape">Todo cliente recebe este recibo no app, todo mês. Cliente de exemplo.</p>
+        </div>
+        <div class="lucro-tese">
+          <h3>Transparência é a nossa estratégia de aquisição.</h3>
+          <p>Nenhum banco mostra quanto ganha com você. A Tino mostra, e isso vira assunto no grupo da família. Cliente que confia indica, e indicação custa uma fração da propaganda: é por isso que o nosso custo de aquisição fica em R$ 60.</p>
+          <p>O recibo também segura a Tino: se uma linha de lucro não se explica para o cliente, ela não deveria existir.</p>
+        </div>
+      </div>
+
+      <div class="graficos">
+        <figure class="grafico" id="grafico-receita">
+          <figcaption>
+            <span class="grafico__titulo">Receita mensal por cliente ativo</span>
+            <span class="grafico__sub">Em reais, por linha de negócio. Projeção ilustrativa.</span>
+          </figcaption>
+          <div class="barras" role="list"></div>
+          <details class="grafico__tabela">
+            <summary>Ver como tabela</summary>
+            <div class="tabela-rolagem"><table></table></div>
+          </details>
+        </figure>
+        <figure class="grafico" id="grafico-custo">
+          <figcaption>
+            <span class="grafico__titulo">Custo para servir um cliente por mês</span>
+            <span class="grafico__sub">Em reais. Estimativas ilustrativas.</span>
+          </figcaption>
+          <div class="barras" role="list"></div>
+          <details class="grafico__tabela">
+            <summary>Ver como tabela</summary>
+            <div class="tabela-rolagem"><table></table></div>
+          </details>
+        </figure>
+      </div>
+
+      <dl class="unit" id="unit">
+        <div><dt>Receita por cliente</dt><dd id="ue-arpu">–</dd><span>por mês</span></div>
+        <div><dt>Margem de contribuição</dt><dd id="ue-margem">–</dd><span>após custo de servir, perdas, funding e impostos</span></div>
+        <div><dt>Valor do cliente (LTV)</dt><dd id="ue-ltv">–</dd><span id="ue-vida">–</span></div>
+        <div><dt>Custo de aquisição (CAC)</dt><dd id="ue-cac">–</dd><span>com indicação como canal principal</span></div>
+        <div><dt>LTV ÷ CAC</dt><dd id="ue-ltvcac">–</dd><span>acima de 3 já é saudável</span></div>
+        <div><dt>Retorno do CAC</dt><dd id="ue-payback">–</dd><span>meses de margem</span></div>
+      </dl>
+      <div class="tooltip" id="tooltip" role="tooltip" hidden></div>
+
+      <h3 class="subtitulo">Seis ideias fora da caixa que viram receita</h3>
+      <div class="ideias">
+        <article class="ideia">
+          <h4>Compra coletiva</h4>
+          <p>A IA sabe quantos clientes pagam plano de celular, seguro e energia. Ela junta todo mundo e negocia em bloco. O cliente paga menos, o fornecedor paga comissão por um lote de clientes de uma vez.</p>
+        </article>
+        <article class="ideia">
+          <h4>Dividendo de dados</h4>
+          <p>Tendências de consumo agregadas e anonimizadas, vendidas para varejo e indústria. Só entra quem aceitar, pode sair quando quiser, e metade da receita volta para quem participa, como cashback.</p>
+        </article>
+        <article class="ideia">
+          <h4>Tino Inside</h4>
+          <p>O motor de crédito e o Negociador licenciados para varejistas, apps de entrega e ERPs que querem oferecer crédito sem virar banco. Receita B2B recorrente, sem custo de aquisição de cliente final.</p>
+        </article>
+        <article class="ideia">
+          <h4>Assinatura que vira depósito</h4>
+          <p>O Tino Pro sai grátis para quem deixa R$ 15 mil investidos. O cliente economiza R$ 238,80 por ano, e o saldo rende para a Tino R$ 270 de spread: mais do que a assinatura pagaria.</p>
+        </article>
+        <article class="ideia">
+          <h4>Crédito para quem o banco não vê</h4>
+          <p>Motorista de app, diarista e camelô movimentam dinheiro todo dia por Pix, mas não têm holerite. O Score vivo empresta pelo fluxo real e abre um mercado de milhões de pessoas.</p>
+        </article>
+        <article class="ideia">
+          <h4>Pix parcelado no varejo</h4>
+          <p>O lojista recebe à vista por Pix e o cliente parcela com a Tino. A Tino cobra uma taxa do lojista, menor que a da maquininha, e os juros do parcelamento.</p>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <section class="secao" id="seguranca" aria-labelledby="seg-titulo">
+    <div class="secao__in seg">
+      <header class="secao__cab">
+        <p class="eyebrow">Segurança</p>
+        <h2 id="seg-titulo">Uma IA que mexe no seu dinheiro precisa de freio.</h2>
+      </header>
+      <ul class="regras">
+        <li><strong>Você aprova o que importa.</strong> Pix acima do limite que você definiu, ou para chave nova, só sai com biometria.</li>
+        <li><strong>Antigolpe ativo.</strong> Transferência com padrão de golpe fica retida e a Tino liga para você antes de liberar.</li>
+        <li><strong>Crédito explicado.</strong> Toda decisão de limite vem com o motivo em português claro, e você pode pedir revisão por uma pessoa (LGPD, art. 20).</li>
+        <li><strong>Open Finance com consentimento.</strong> A IA só lê dados de outros bancos que você autorizou, e você revoga no app quando quiser.</li>
+        <li><strong>Dado individual não se vende.</strong> Nem nome, nem CPF, nem extrato. Só tendências agregadas, de quem aceitou participar.</li>
+      </ul>
+    </div>
+  </section>
+
+  <section class="secao secao--cta" id="lista" aria-labelledby="lista-titulo">
+    <div class="secao__in cta">
+      <div>
+        <p class="eyebrow">Lista de espera</p>
+        <h2 id="lista-titulo">Seja dos primeiros a ter um banco com tino.</h2>
+        <p class="secao__lead">Quem entra na lista ganha 3 meses de Tino Pro e prioridade no Score vivo.</p>
+      </div>
+      <form class="cta__form" id="lista-form" novalidate>
+        <div class="campo">
+          <label for="lista-nome">Nome</label>
+          <input id="lista-nome" name="nome" autocomplete="given-name" required>
+        </div>
+        <div class="campo">
+          <label for="lista-email">E-mail</label>
+          <input id="lista-email" name="email" type="email" autocomplete="email" required>
+        </div>
+        <div class="campo">
+          <label for="lista-prioridade">O que a Tino deve resolver primeiro?</label>
+          <select id="lista-prioridade" name="prioridade">
+            <option>Sair do rotativo do cartão</option>
+            <option>Baixar minhas contas fixas</option>
+            <option>Fazer meu dinheiro render</option>
+            <option>Organizar as finanças do meu MEI</option>
+            <option>Conseguir crédito sem holerite</option>
+          </select>
+        </div>
+        <button class="btn btn--primario" type="submit">Entrar na lista</button>
+        <p class="cta__msg" id="lista-msg" role="status" hidden></p>
+      </form>
+    </div>
+  </section>
+
+</main>
+
+<footer class="rodape">
+  <div class="rodape__in">
+    <a class="marca" href="#inicio" aria-label="Tino, voltar ao início">
+      <svg class="marca__tile" viewBox="0 0 32 32" aria-hidden="true"><rect width="32" height="32" rx="7"/><path d="M16 0A16 16 0 0 1 0 16M32 16A16 16 0 0 0 16 32"/></svg>
+      <span class="marca__nome">tino</span>
+    </a>
+    <p class="rodape__aviso">Tino é um projeto conceitual. Não é instituição financeira e não tem autorização do Banco Central do Brasil. Taxas, números, projeções e a cliente Marina são ilustrativos.</p>
+    <p class="rodape__copy">© 2026 Tino</p>
+  </div>
+</footer>
+
+<script src="calc.js"></script>
+<script src="app.js"></script>
+</body>
+</html>

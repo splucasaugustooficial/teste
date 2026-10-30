@@ -1,0 +1,9 @@
+{
+  "name": "tino-banco",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Site conceitual da Tino, banco digital brasileiro gerido por IA",
+  "scripts": {
+    "test": "node --test \"site/tests/*.test.js\""
+  }
+}

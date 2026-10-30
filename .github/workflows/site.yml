@@ -1,0 +1,23 @@
+name: site
+
+on:
+  push:
+    paths: ["site/**", "package.json", ".github/workflows/site.yml"]
+  pull_request:
+    paths: ["site/**", "package.json", ".github/workflows/site.yml"]
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: sintaxe
+        run: node --check site/calc.js && node --check site/app.js
+      - name: testes dos cálculos
+        run: npm test
