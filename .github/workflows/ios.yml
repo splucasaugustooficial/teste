@@ -1,0 +1,24 @@
+name: iOS build
+
+on:
+  push:
+    branches: ["**"]
+  pull_request:
+
+jobs:
+  build:
+    runs-on: macos-15
+    steps:
+      - uses: actions/checkout@v4
+      - name: Instalar XcodeGen
+        run: brew install xcodegen
+      - name: Gerar projeto Xcode
+        run: xcodegen generate
+      - name: Compilar para o simulador
+        run: |
+          set -o pipefail
+          xcodebuild build \
+            -project Sonora.xcodeproj \
+            -scheme Sonora \
+            -destination 'generic/platform=iOS Simulator' \
+            CODE_SIGNING_ALLOWED=NO 2>&1 | tee build.log | grep -E "error:|warning: .*/Sonora/|BUILD (SUCCEEDED|FAILED)"

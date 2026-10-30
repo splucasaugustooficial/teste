@@ -1,0 +1,6 @@
+Sonora.xcodeproj/
+Sonora/Info.plist
+build/
+DerivedData/
+.DS_Store
+xcuserdata/
