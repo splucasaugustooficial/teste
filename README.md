@@ -20,9 +20,22 @@ Feito em SwiftUI + AVAudioEngine, só com frameworks da Apple (zero dependência
 - **Playlists:** criar, renomear, reordenar, capa em mosaico, mais as playlists automáticas.
 - **Extra:** "Redescobrir músicas esquecidas" (aleatório com o que você não ouve há 30 dias), edição de informações das faixas.
 
-## Como rodar no seu iPhone (grátis)
+## Como instalar no seu iPhone (grátis)
 
-Precisa de um Mac com Xcode 16+. Não precisa pagar a conta de desenvolvedor da Apple.
+### Sem Mac: baixe o IPA
+
+Cada push gera, no GitHub Actions (aba **Actions › iOS build**), dois arquivos:
+
+- `Sonora-unsigned-ipa`: o app compilado para iPhone (Release);
+- `Sonora-screenshots`: o app rodando no simulador, com músicas de demonstração.
+
+Instale o `Sonora-unsigned.ipa` com o [Sideloadly](https://sideloadly.io) ou o
+[AltStore](https://altstore.io) (Windows ou Mac), entrando com seu Apple ID: eles assinam o app
+para o seu aparelho. Depois, autorize em *Ajustes › Geral › VPN e Gerenciamento de Dispositivos*.
+
+### Com Mac: compile no Xcode
+
+Precisa do Xcode 16 ou mais novo. Não precisa pagar a conta de desenvolvedor da Apple.
 
 ```bash
 brew install xcodegen
@@ -37,7 +50,8 @@ No iPhone, autorize em *Ajustes › Geral › VPN e Gerenciamento de Dispositivo
 na App Store é preciso a conta de desenvolvedor.)
 
 Requer iOS 17 ou superior. O GitHub Actions (`.github/workflows/ios.yml`) compila o
-projeto a cada push.
+projeto a cada push e roda `scripts/simulator-demo.sh`, que instala o app no simulador,
+importa músicas de demonstração (tons sintetizados, mono e estéreo) e tira capturas de tela.
 
 ## Estrutura
 
