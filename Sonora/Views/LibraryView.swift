@@ -253,7 +253,7 @@ struct ArtistsView: View {
     @Environment(LibraryStore.self) private var library
 
     var body: some View {
-        List(library.artists, id: \.name) { artist in
+        List(library.artists) { artist in
             NavigationLink { SongListView(source: .artist(artist.name)) } label: {
                 HStack(spacing: 12) {
                     ArtworkView(track: library.tracks.first { $0.artist == artist.name && $0.hasArtwork }

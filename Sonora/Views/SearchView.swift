@@ -17,7 +17,7 @@ struct SearchView: View {
 
                     if !artists.isEmpty {
                         Section("Artistas") {
-                            ForEach(artists.prefix(5), id: \.name) { artist in
+                            ForEach(artists.prefix(5)) { artist in
                                 NavigationLink(artist.name) { SongListView(source: .artist(artist.name)) }
                             }
                         }

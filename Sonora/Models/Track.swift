@@ -36,6 +36,13 @@ struct Album: Identifiable, Hashable {
     var id: String { "\(artist)\u{1F}\(title)" }
 }
 
+struct ArtistInfo: Identifiable, Hashable {
+    var name: String
+    var count: Int
+
+    var id: String { name }
+}
+
 enum TrackSource: Hashable {
     case all, favorites, mostPlayed, recentlyAdded, recentlyPlayed
     case artist(String)

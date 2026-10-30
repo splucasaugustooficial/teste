@@ -1,6 +1,7 @@
 import AVFoundation
 import MediaPlayer
 import Observation
+import SwiftUI
 import UIKit
 
 /// Motor de reprodução: AVAudioEngine com equalizador de 10 bandas e controle de velocidade,

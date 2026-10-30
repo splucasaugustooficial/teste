@@ -1,6 +1,7 @@
 import AVFoundation
 import Foundation
 import Observation
+import SwiftUI
 import UIKit
 
 /// Biblioteca local: arquivos de áudio, metadados, playlists e estatísticas.
@@ -11,6 +12,7 @@ final class LibraryStore {
     private(set) var playlists: [Playlist] = []
     private(set) var importStatus: String?
     var toast: String?
+    @ObservationIgnored private var isScanning = false
 
     static let audioExtensions: Set<String> = [
         "mp3", "m4a", "m4b", "aac", "wav", "aif", "aiff", "aifc", "flac", "caf", "mp4",
@@ -71,6 +73,9 @@ final class LibraryStore {
 
     /// Move para a biblioteca as músicas copiadas para a pasta do app (Arquivos ou Finder/iTunes no computador).
     func scanDocumentsFolder() async {
+        guard !isScanning else { return }
+        isScanning = true
+        defer { isScanning = false }
         let items = (try? FileManager.default.contentsOfDirectory(
             at: Self.documentsDirectory, includingPropertiesForKeys: nil, options: [.skipsHiddenFiles]
         )) ?? []
@@ -253,9 +258,9 @@ final class LibraryStore {
 
     func album(id: String) -> Album? { albums.first { $0.id == id } }
 
-    var artists: [(name: String, count: Int)] {
+    var artists: [ArtistInfo] {
         Dictionary(grouping: tracks, by: \.artist)
-            .map { (name: $0.key, count: $0.value.count) }
+            .map { ArtistInfo(name: $0.key, count: $0.value.count) }
             .sorted { $0.name.localizedStandardCompare($1.name) == .orderedAscending }
     }
 
