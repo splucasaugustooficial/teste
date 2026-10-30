@@ -29,10 +29,11 @@ struct RootView: View {
         }
         #if DEBUG
         .task {
-            // `-demoPlay YES`: começa a tocar e abre o player (capturas de tela do CI).
+            // `-demoPlay YES [-demoAlbum Nome]`: começa a tocar e abre o player (capturas do CI).
             guard UserDefaults.standard.bool(forKey: "demoPlay") else { return }
             try? await Task.sleep(for: .seconds(1))
-            let album = library.albums.first { $0.tracks.contains(where: \.hasArtwork) }
+            let name = UserDefaults.standard.string(forKey: "demoAlbum")
+            let album = library.albums.first { name == nil ? $0.tracks.contains(where: \.hasArtwork) : $0.title == name }
             player.play(album?.tracks ?? library.tracks(for: .all))
             player.showFullPlayer = true
         }

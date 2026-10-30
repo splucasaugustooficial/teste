@@ -60,6 +60,8 @@ final class PlayerController {
 
     private let engine = AVAudioEngine()
     private let node = AVAudioPlayerNode()
+    /// Converte qualquer arquivo (mono, 44,1/48/96 kHz...) para o formato fixo dos efeitos.
+    private let converter = AVAudioMixerNode()
     private let timePitch = AVAudioUnitTimePitch()
     private let eq = AVAudioUnitEQ(numberOfBands: 10)
 
@@ -83,8 +85,8 @@ final class PlayerController {
         playbackRate = Float(defaults.object(forKey: "playbackRate") as? Double ?? 1)
         repeatMode = RepeatMode(rawValue: defaults.integer(forKey: "repeatMode")) ?? .off
 
-        configureEngine()
         configureSession()
+        configureEngine()
         configureRemoteCommands()
         observeSystemNotifications()
     }
@@ -101,12 +103,19 @@ final class PlayerController {
         applyEQ()
         timePitch.rate = playbackRate
 
+        // Os efeitos exigem o mesmo formato na entrada e na saída, então rodam sempre em
+        // estéreo na taxa do aparelho; só a ligação arquivo → conversor muda por música.
+        let hardwareRate = AVAudioSession.sharedInstance().sampleRate
+        let effectsFormat = AVAudioFormat(standardFormatWithSampleRate: hardwareRate > 0 ? hardwareRate : 44_100, channels: 2)
+
         engine.attach(node)
+        engine.attach(converter)
         engine.attach(timePitch)
         engine.attach(eq)
-        engine.connect(timePitch, to: eq, format: nil)
-        engine.connect(eq, to: engine.mainMixerNode, format: nil)
-        engine.connect(node, to: timePitch, format: nil)
+        engine.connect(converter, to: timePitch, format: effectsFormat)
+        engine.connect(timePitch, to: eq, format: effectsFormat)
+        engine.connect(eq, to: engine.mainMixerNode, format: effectsFormat)
+        engine.connect(node, to: converter, format: effectsFormat)
         engine.prepare()
     }
 
@@ -127,13 +136,8 @@ final class PlayerController {
         if let connectedFormat, connectedFormat == format { return }
         let wasRunning = engine.isRunning
         if wasRunning { engine.stop() }
-        // Toda a cadeia no formato do arquivo; a conversão para o hardware fica com o mixer.
         engine.disconnectNodeOutput(node)
-        engine.disconnectNodeOutput(timePitch)
-        engine.disconnectNodeOutput(eq)
-        engine.connect(node, to: timePitch, format: format)
-        engine.connect(timePitch, to: eq, format: format)
-        engine.connect(eq, to: engine.mainMixerNode, format: format)
+        engine.connect(node, to: converter, format: format)
         connectedFormat = format
         if wasRunning { try? engine.start() }
     }

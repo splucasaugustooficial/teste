@@ -70,7 +70,8 @@ song() { # arquivo título artista álbum faixa freq duração [capa]
       -metadata:s:v title="Album cover" -metadata:s:v comment="Cover (front)" -disposition:v attached_pic \
       "$DOCS/$file.mp3"
   else
-    ffmpeg -loglevel error -y -f lavfi -i "$tone" -c:a aac -b:a 128k \
+    # Estéreo e 48 kHz (as MP3 acima são mono 44,1 kHz) para testar a conversão de formato.
+    ffmpeg -loglevel error -y -f lavfi -i "$tone" -ac 2 -ar 48000 -c:a aac -b:a 128k \
       -metadata title="$title" -metadata artist="$artist" -metadata album="$album" -metadata track="$track" \
       "$DOCS/$file.m4a"
   fi
@@ -117,7 +118,7 @@ shot 06-buscar
 
 # 7. Modo escuro.
 xcrun simctl ui "$UDID" appearance dark
-launch -demoPlay YES
+launch -demoPlay YES -demoAlbum "Estações"
 shot 07-player-escuro 6
 
 # Diagnóstico: relatórios de falha e log do app, se houver.
