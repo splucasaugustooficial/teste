@@ -24,6 +24,22 @@ test("lerNumeroBR entende o formato brasileiro e rejeita lixo", () => {
   assert.ok(Number.isNaN(calc.lerNumeroBR(null)));
 });
 
+test("valorNaFrase acha o valor em reais e ignora parcelas, prazos e taxas", () => {
+  assert.equal(calc.valorNaFrase("posso comprar um celular de r$ 3.000?", 0), 3000);
+  assert.equal(calc.valorNaFrase("quanto rendem r$ 5 mil?", 0), 5000);
+  assert.equal(calc.valorNaFrase("uma tv de 2,5 mil", 0), 2500);
+  assert.equal(calc.valorNaFrase("r$ 3.000, posso?", 0), 3000);
+  assert.equal(calc.valorNaFrase("posso comprar um celular em 12x?", 999), 999);
+  assert.equal(calc.valorNaFrase("em 12 vezes, um celular de 3 mil", 0), 3000);
+  assert.equal(calc.valorNaFrase("guardar por 6 meses", 999), 999);
+  assert.equal(calc.valorNaFrase("quanto rende em 1 mes", 999), 999);
+  assert.equal(calc.valorNaFrase("por 1 ano ou 2 dias", 999), 999);
+  assert.equal(calc.valorNaFrase("em 10 parcelas, uma tv de 2 mil", 0), 2000);
+  assert.equal(calc.valorNaFrase("rende 100% do cdi?", 999), 999);
+  assert.equal(calc.valorNaFrase("caí no rotativo", 999), 999);
+  assert.equal(calc.valorNaFrase("custa 0", 999), 999);
+});
+
 test("aliquotaIR segue a tabela regressiva nas fronteiras", () => {
   assert.equal(calc.aliquotaIR(1), 0.225);
   assert.equal(calc.aliquotaIR(180), 0.225);

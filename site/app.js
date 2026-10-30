@@ -256,14 +256,9 @@
     return texto.normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase();
   }
 
-  function valorNaFrase(texto, padrao) {
-    const m = texto.match(/(\d[\d.,]*)\s*(mil\b|k\b)?/i);
-    if (!m) return padrao;
-    let v = C.lerNumeroBR(m[1].replace(/[.,]+$/, ""));
-    if (!Number.isFinite(v) || v <= 0) return padrao;
-    if (m[2]) v *= 1000;
-    return v;
-  }
+  const valorNaFrase = C.valorNaFrase;
+  const pct = (taxa) => `${C.formatNumero(taxa * 100)}%`;
+  const cetTino = `${pct(C.PREMISSAS.jurosParcelamentoTino)} a.m.`;
 
   const sobraMensal = M.renda - M.gastoMes;
   const faltaMeta = M.meta - M.caixinha;
@@ -295,7 +290,7 @@
           texto: `${abertura} No rotativo de um banco médio, isso viraria ${brl(divida + juros)} em um ano. Os juros só param no teto legal, que é dobrar a dívida.`,
           linhas: [
             ["Parcelamento Tino", `12x de ${brl(parcela)}`],
-            ["CET", "3,9% a.m."],
+            ["CET", cetTino],
             ["Total a pagar", brl(totalTino)],
             ["Você deixa de pagar", brl(divida + juros - totalTino)],
           ],
@@ -304,7 +299,7 @@
       },
     },
     {
-      chave: /compr|posso gastar|iphone|notebook|geladeira|\btv\b|televis/,
+      chave: /compr|posso gastar|\bcabe\b|iphone|notebook|geladeira|\btv\b|televis/,
       responder(texto) {
         const valor = valorNaFrase(texto, 3000);
         const parcela = valor / 10;
@@ -352,7 +347,7 @@
       },
     },
     {
-      chave: /rend|invest|caixinha|cdb|poupan|guardar|aplicar/,
+      chave: /\brend(e|em|er|imentos?)\b|invest|caixinha|cdb|poupan|guardar|aplicar/,
       responder(texto) {
         const valor = valorNaFrase(texto, 5000);
         const cdi = estado.cdiAnual;
@@ -360,13 +355,13 @@
         // A Selic fica cerca de 0,1 ponto acima do CDI.
         const poupanca = C.rendimentoPoupanca({ valor, selicAnual: cdi + 0.001, meses: 12 });
         return {
-          texto: `Em 12 meses, ${brl(valor)} na Caixinha (100% do CDI) rendem ${brl(caixinha.liquido)}, já descontado o IR de ${C.formatNumero(caixinha.aliquota * 100)}%.`,
+          texto: `Em 12 meses, ${brl(valor)} na Caixinha (100% do CDI) rendem ${brl(caixinha.liquido)}, já descontado o IR de ${pct(caixinha.aliquota)}.`,
           linhas: [
             ["Caixinha Tino", brl(caixinha.liquido)],
             ["Poupança", brl(poupanca)],
             ["Diferença", brl(caixinha.liquido - poupanca)],
           ],
-          depois: `Usei CDI de ${C.formatNumero(cdi * 100)}% ao ano. Você resgata quando quiser, a qualquer hora.`,
+          depois: `Usei CDI de ${pct(cdi)} ao ano. Você resgata quando quiser, a qualquer hora.`,
         };
       },
     },
@@ -393,7 +388,7 @@
           linhas: [
             ["6 parcelas", `6x de ${brl(em(6))}`],
             ["12 parcelas", `12x de ${brl(em(12))}`],
-            ["CET", "3,9% a.m."],
+            ["CET", cetTino],
           ],
         };
       },
@@ -455,9 +450,10 @@
       return partes;
     }
 
+    // Devolve false quando a pergunta não foi aceita, para o campo não perder o texto.
     function perguntar(texto) {
       const pergunta = texto.trim();
-      if (!pergunta || ocupado) return;
+      if (!pergunta || ocupado) return false;
       ocupado = true;
       adicionar("msg--voce", [document.createTextNode(pergunta)]);
 
@@ -474,12 +470,12 @@
         adicionar("msg--tino", montarResposta(responder(pergunta)));
         ocupado = false;
       }, espera);
+      return true;
     }
 
     form.addEventListener("submit", (e) => {
       e.preventDefault();
-      perguntar(input.value);
-      input.value = "";
+      if (perguntar(input.value)) input.value = "";
     });
 
     $("#chat-sugestoes").addEventListener("click", (e) => {
@@ -558,6 +554,10 @@
       escrever("res-frase", frase);
     }
 
+    escrever("taxa-spread", pct(C.PREMISSAS.spreadCaixinha));
+    escrever("taxa-intercambio", pct(C.PREMISSAS.intercambio));
+    escrever("taxa-margem", pct(C.PREMISSAS.margemCredito));
+
     $("#sim-form").addEventListener("input", calcular);
     $("#sim-form").addEventListener("submit", (e) => e.preventDefault());
     calcular();
@@ -610,15 +610,16 @@
       area.append(linha);
     }
 
+    // A tabela leva tudo o que o tooltip mostra, para nada depender de passar o mouse.
     const tabela = $(".grafico__tabela table", figura);
     const cab = el("thead");
     const cabLinha = el("tr");
-    cabLinha.append(el("th", "", "Linha"), el("th", "", "R$ por mês"));
+    cabLinha.append(el("th", "", "Linha"), el("th", "num", "R$ por mês"), el("th", "", "Detalhe"));
     cab.append(cabLinha);
     const corpo = el("tbody");
     for (const d of dados) {
       const tr = el("tr");
-      tr.append(el("td", "", d.linha), el("td", "", brl(d.valor)));
+      tr.append(el("td", "", d.linha), el("td", "num", brl(d.valor)), el("td", "", detalhe(d)));
       corpo.append(tr);
     }
     tabela.replaceChildren(cab, corpo);

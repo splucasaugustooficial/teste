@@ -26,7 +26,9 @@ python3 -m http.server -d site 8000   # depois acesse http://localhost:8000
 
 Os cálculos ficam em `site/calc.js` (funções puras, usadas pela página e pelos
 testes). Premissas como CDI, spread e CET estão em `PREMISSAS` no topo do
-arquivo. Testes:
+arquivo; o simulador, o chat e os gráficos leem de lá. Os textos fixos do
+`index.html` que citam taxas (CET de 3,9% a.m., Pro grátis com R$ 15 mil,
+CAC de R$ 60) precisam ser atualizados junto. Testes:
 
 ```bash
 npm test

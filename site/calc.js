@@ -95,6 +95,22 @@
     return /^-?\d+(\.\d+)?$/.test(s) ? Number(s) : NaN;
   }
 
+  // Primeiro valor em reais citado numa frase ("R$ 3.000", "5 mil"). Números que
+  // contam parcelas, prazos ou taxas ("12x", "6 meses", "100%") não são preço.
+  function valorNaFrase(texto, padrao) {
+    const numeros = String(texto).matchAll(
+      /(\d[\d.,]*)\s*(mil\b|k\b|x\b|vezes\b|parcelas?\b|mes(?:es)?\b|anos?\b|dias?\b|%)?/gi
+    );
+    for (const [, digitos, sufixo = ""] of numeros) {
+      const unidade = sufixo.toLowerCase();
+      if (unidade && unidade !== "mil" && unidade !== "k") continue;
+      const v = lerNumeroBR(digitos.replace(/[.,]+$/, ""));
+      if (!Number.isFinite(v) || v <= 0) continue;
+      return unidade ? v * 1000 : v;
+    }
+    return padrao;
+  }
+
   // Tabela regressiva do IR sobre renda fixa (Lei 11.033/2004).
   function aliquotaIR(dias) {
     if (dias <= 180) return 0.225;
@@ -222,6 +238,7 @@
     formatBRLInteiro,
     formatNumero,
     lerNumeroBR,
+    valorNaFrase,
     aliquotaIR,
     rendimentoCDI,
     rendimentoPoupanca,
