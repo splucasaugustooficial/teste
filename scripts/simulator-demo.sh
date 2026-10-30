@@ -120,10 +120,10 @@ shot 06-buscar
 launch -demoTab 4
 shot 07-explorar 12
 
-# 8. ccMixter: baixa de verdade as duas primeiras músicas pela API.
-launch -demoTab 4 -exploreSource ccMixter -demoDownload YES
-shot 08-baixando 8
-for _ in $(seq 1 30); do
+# 8. Baixa de verdade duas músicas do Internet Archive pela API.
+launch -demoTab 4 -demoDownload YES
+shot 08-baixando 10
+for _ in $(seq 1 40); do
   sleep 3
   LIB="$(xcrun simctl get_app_container "$UDID" "$BUNDLE_ID" data)/Library/Application Support/Sonora/library.json"
   [[ $(grep -o '"remoteID"' "$LIB" 2>/dev/null | wc -l) -ge 2 ]] && break

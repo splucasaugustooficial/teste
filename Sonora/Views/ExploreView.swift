@@ -108,16 +108,19 @@ struct ExploreView: View {
             switch source {
             case .internetArchive:
                 archiveItems = try await MusicAPI.searchArchive(submitted)
-            case .ccMixter:
-                tracks = try await MusicAPI.searchCCMixter(submitted)
             case .jamendo:
                 tracks = try await MusicAPI.searchJamendo(submitted, clientID: jamendoKey)
             }
             loadState = .loaded
             #if DEBUG
-            // `-demoDownload YES`: baixa as duas primeiras faixas (teste de ponta a ponta no CI).
+            // `-demoDownload YES`: baixa as duas faixas mais curtas do primeiro álbum (teste do CI).
             if UserDefaults.standard.bool(forKey: "demoDownload") {
-                downloads.download(Array(tracks.prefix(2)))
+                for item in archiveItems.prefix(5) {
+                    let found = (try? await MusicAPI.archiveTracks(item)) ?? []
+                    guard !found.isEmpty else { continue }
+                    downloads.download(Array(found.sorted { ($0.duration ?? .infinity) < ($1.duration ?? .infinity) }.prefix(2)))
+                    break
+                }
             }
             #endif
         } catch {

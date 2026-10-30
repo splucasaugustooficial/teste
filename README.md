@@ -14,8 +14,8 @@ Feito em SwiftUI + AVAudioEngine, só com frameworks da Apple (zero dependência
 
 - **Explorar (baixar músicas grátis):** busca em catálogos que liberam download gratuito e legal,
   com prévia por streaming, progresso, "baixar álbum" e a licença guardada em cada faixa:
-  - [Internet Archive](https://archive.org/details/audio): só itens em Creative Commons, domínio público ou da Live Music Archive;
-  - [ccMixter](https://ccmixter.org): músicas e remixes em Creative Commons;
+  - [Internet Archive](https://archive.org/details/netlabels): quase 200 mil álbuns de netlabels em Creative Commons,
+    discos em domínio público e shows da Live Music Archive (sem audiolivros nem podcasts);
   - [Jamendo](https://www.jamendo.com): 600 mil+ músicas independentes. Precisa de um *Client ID* gratuito,
     criado em [devportal.jamendo.com](https://devportal.jamendo.com) e colado no próprio app.
 

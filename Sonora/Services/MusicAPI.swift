@@ -38,7 +38,14 @@ enum MusicAPI {
         let cleaned = query.unicodeScalars
             .filter { !"\\/:()[]{}\"^~*?!+-&|".unicodeScalars.contains($0) }
             .map(String.init).joined().trimmed
-        var q = "mediatype:audio AND (licenseurl:*creativecommons* OR licenseurl:*publicdomain* OR collection:etree)"
+        // Só música (netlabels, Live Music Archive, discos) com licença livre; sem audiolivros e podcasts.
+        var q = """
+            mediatype:audio \
+            AND (collection:netlabels OR collection:etree OR collection:audio_music \
+            OR (collection:opensource_audio AND subject:music)) \
+            AND -collection:librivoxaudio AND -collection:audio_bookspoetry AND -collection:podcasts \
+            AND (licenseurl:*creativecommons* OR licenseurl:*publicdomain* OR collection:etree)
+            """
         if !cleaned.isEmpty { q = "(\(cleaned)) AND \(q)" }
 
         var components = URLComponents(string: "https://archive.org/advancedsearch.php")!
@@ -109,51 +116,6 @@ enum MusicAPI {
             case let (a?, b?) where a != b: return a < b
             default: return $0.downloadURL.path.localizedStandardCompare($1.downloadURL.path) == .orderedAscending
             }
-        }
-    }
-
-    // MARK: - ccMixter
-
-    static func searchCCMixter(_ query: String) async throws -> [OnlineTrack] {
-        var components = URLComponents(string: "https://ccmixter.org/api/query")!
-        components.queryItems = [
-            URLQueryItem(name: "f", value: "json"),
-            URLQueryItem(name: "limit", value: "40"),
-            URLQueryItem(name: "sort", value: "rank"),
-        ]
-        if let q = query.nonEmpty {
-            components.queryItems! += [
-                URLQueryItem(name: "search", value: q.trimmed),
-                URLQueryItem(name: "search_type", value: "all"),
-            ]
-        }
-
-        let uploads = try await json(components.url!) as? [[String: Any]] ?? []
-        return uploads.compactMap { upload -> OnlineTrack? in
-            let files = upload["files"] as? [[String: Any]] ?? []
-            guard let file = files.first(where: {
-                let info = $0["file_format_info"] as? [String: Any]
-                return string(info?["mime_type"]) == "audio/mpeg"
-            }),
-                let download = string(file["download_url"]).flatMap(URL.init(string:)),
-                let id = string(upload["upload_id"])
-            else { return nil }
-            let info = file["file_format_info"] as? [String: Any]
-            let licenseURL = string(upload["license_url"])
-            return OnlineTrack(
-                id: "ccm:\(id)",
-                source: .ccMixter,
-                title: string(upload["upload_name"]) ?? "Sem título",
-                artist: string(upload["user_real_name"]).nonEmpty ?? string(upload["user_name"]) ?? "Artista desconhecido",
-                album: "ccMixter",
-                duration: string(info?["ps"]).flatMap(parseDuration),
-                artworkURL: nil,
-                streamURL: download,
-                downloadURL: download,
-                license: License.name(from: licenseURL),
-                licenseURL: licenseURL.flatMap(URL.init(string:)),
-                pageURL: string(upload["file_page_url"]).flatMap(URL.init(string:))
-            )
         }
     }
 

@@ -2,14 +2,13 @@ import Foundation
 
 /// Catálogos com músicas liberadas para download gratuito (Creative Commons ou domínio público).
 enum OnlineSource: String, CaseIterable, Identifiable {
-    case internetArchive, ccMixter, jamendo
+    case internetArchive, jamendo
 
     var id: String { rawValue }
 
     var name: String {
         switch self {
-        case .internetArchive: "Archive"
-        case .ccMixter: "ccMixter"
+        case .internetArchive: "Internet Archive"
         case .jamendo: "Jamendo"
         }
     }
@@ -17,9 +16,7 @@ enum OnlineSource: String, CaseIterable, Identifiable {
     var about: String {
         switch self {
         case .internetArchive:
-            "Internet Archive: álbuns e shows em Creative Commons, domínio público e a Live Music Archive (bandas que liberam gravações ao vivo)."
-        case .ccMixter:
-            "ccMixter: milhares de músicas e remixes em Creative Commons."
+            "Quase 200 mil álbuns de netlabels em Creative Commons, discos em domínio público e shows da Live Music Archive (bandas que liberam gravações ao vivo)."
         case .jamendo:
             "Jamendo: mais de 600 mil músicas de artistas independentes, liberadas pelos próprios autores."
         }
@@ -28,7 +25,6 @@ enum OnlineSource: String, CaseIterable, Identifiable {
     var website: URL {
         switch self {
         case .internetArchive: URL(string: "https://archive.org/details/audio")!
-        case .ccMixter: URL(string: "https://ccmixter.org")!
         case .jamendo: URL(string: "https://www.jamendo.com")!
         }
     }
