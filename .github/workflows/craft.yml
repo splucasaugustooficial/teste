@@ -1,0 +1,20 @@
+name: craft
+
+on:
+  push:
+    paths: [".claude/skills/craft/**", ".github/workflows/craft.yml"]
+  pull_request:
+    paths: [".claude/skills/craft/**", ".github/workflows/craft.yml"]
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: shellcheck
+        run: shellcheck .claude/skills/craft/scripts/*.sh .claude/skills/craft/tests/*.sh
+      - name: testes do checks.sh
+        run: bash .claude/skills/craft/tests/test_checks.sh
