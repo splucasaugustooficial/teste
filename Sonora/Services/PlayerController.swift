@@ -127,8 +127,13 @@ final class PlayerController {
         if let connectedFormat, connectedFormat == format { return }
         let wasRunning = engine.isRunning
         if wasRunning { engine.stop() }
+        // Toda a cadeia no formato do arquivo; a conversão para o hardware fica com o mixer.
         engine.disconnectNodeOutput(node)
+        engine.disconnectNodeOutput(timePitch)
+        engine.disconnectNodeOutput(eq)
         engine.connect(node, to: timePitch, format: format)
+        engine.connect(timePitch, to: eq, format: format)
+        engine.connect(eq, to: engine.mainMixerNode, format: format)
         connectedFormat = format
         if wasRunning { try? engine.start() }
     }
@@ -259,9 +264,17 @@ final class PlayerController {
         let token = scheduleToken
         node.scheduleSegment(
             file, startingFrame: frame, frameCount: AVAudioFrameCount(remaining), at: nil,
-            completionCallbackType: .dataPlayedBack
-        ) { [weak self] _ in
-            Task { @MainActor [weak self] in self?.segmentDidFinish(token: token) }
+            completionCallbackType: .dataPlayedBack,
+            completionHandler: Self.segmentCompletion(for: self, token: token)
+        )
+    }
+
+    /// Criado fora do MainActor: o AVAudioEngine chama este callback na thread de áudio.
+    nonisolated private static func segmentCompletion(
+        for player: PlayerController, token: Int
+    ) -> AVAudioPlayerNodeCompletionHandler {
+        { [weak player] _ in
+            Task { @MainActor in player?.segmentDidFinish(token: token) }
         }
     }
 

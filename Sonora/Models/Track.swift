@@ -63,7 +63,7 @@ enum TrackSource: Hashable {
         case .all: "music.note"
         case .favorites: "heart.fill"
         case .mostPlayed: "flame.fill"
-        case .recentlyAdded: "clock.badge.plus"
+        case .recentlyAdded: "calendar.badge.plus"
         case .recentlyPlayed: "clock.arrow.circlepath"
         case .artist: "music.mic"
         }

@@ -120,4 +120,11 @@ xcrun simctl ui "$UDID" appearance dark
 launch -demoPlay YES
 shot 07-player-escuro 6
 
+# Diagnóstico: relatórios de falha e log do app, se houver.
+mkdir -p "$OUT/logs"
+cp ~/Library/Logs/DiagnosticReports/Sonora* "$OUT/logs/" 2>/dev/null || true
+xcrun simctl spawn "$UDID" log show --last 10m --style compact \
+  --predicate 'process == "Sonora"' > "$OUT/logs/sonora.log" 2>&1 || true
+system_profiler SPAudioDataType > "$OUT/logs/audio-devices.txt" 2>&1 || true
+
 echo "Capturas salvas em $OUT"
