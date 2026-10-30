@@ -4,21 +4,53 @@ on:
   push:
     branches: ["**"]
   pull_request:
+  workflow_dispatch:
 
 jobs:
   build:
     runs-on: macos-15
+    timeout-minutes: 45
     steps:
       - uses: actions/checkout@v4
-      - name: Instalar XcodeGen
-        run: brew install xcodegen
+
+      - name: Instalar XcodeGen e ffmpeg
+        run: brew install xcodegen ffmpeg
+
       - name: Gerar projeto Xcode
         run: xcodegen generate
-      - name: Compilar para o simulador
+
+      - name: Compilar para iPhone (Release, sem assinatura)
         run: |
           set -o pipefail
           xcodebuild build \
             -project Sonora.xcodeproj \
             -scheme Sonora \
-            -destination 'generic/platform=iOS Simulator' \
-            CODE_SIGNING_ALLOWED=NO 2>&1 | tee build.log | grep -E "error:|warning: .*/Sonora/|BUILD (SUCCEEDED|FAILED)"
+            -configuration Release \
+            -destination 'generic/platform=iOS' \
+            -derivedDataPath build/device \
+            CODE_SIGNING_ALLOWED=NO CODE_SIGNING_REQUIRED=NO CODE_SIGN_IDENTITY="" \
+            2>&1 | tee build.log | grep -E "error:|warning: .*/Sonora/|BUILD (SUCCEEDED|FAILED)"
+
+      - name: Empacotar IPA
+        run: |
+          mkdir -p dist/Payload
+          cp -R build/device/Build/Products/Release-iphoneos/Sonora.app dist/Payload/
+          (cd dist && zip -qry Sonora-unsigned.ipa Payload)
+          ls -lh dist/Sonora-unsigned.ipa
+
+      - name: Rodar no simulador e tirar capturas de tela
+        run: scripts/simulator-demo.sh screenshots
+
+      - name: Publicar IPA
+        uses: actions/upload-artifact@v4
+        with:
+          name: Sonora-unsigned-ipa
+          path: dist/Sonora-unsigned.ipa
+
+      - name: Publicar capturas de tela
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: Sonora-screenshots
+          path: screenshots/
+          if-no-files-found: ignore

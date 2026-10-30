@@ -31,4 +31,5 @@ targets:
     settings:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: app.sonora.player
+        ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
         TARGETED_DEVICE_FAMILY: "1"

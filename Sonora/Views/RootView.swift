@@ -6,21 +6,37 @@ struct RootView: View {
     @Environment(PlayerController.self) private var player
     @Environment(AppRouter.self) private var router
     @State private var newPlaylistName = ""
+    /// Aba inicial; o argumento `-demoTab N` permite abrir outra (usado nas capturas do CI).
+    @State private var selectedTab = UserDefaults.standard.integer(forKey: "demoTab")
 
     var body: some View {
         @Bindable var player = player
         @Bindable var router = router
 
-        TabView {
+        TabView(selection: $selectedTab) {
             LibraryView()
                 .tabItem { Label("Biblioteca", systemImage: "music.note.house.fill") }
+                .tag(0)
             PlaylistsView()
                 .tabItem { Label("Playlists", systemImage: "music.note.list") }
+                .tag(1)
             SearchView()
                 .tabItem { Label("Buscar", systemImage: "magnifyingglass") }
+                .tag(2)
             SoundView()
                 .tabItem { Label("Som", systemImage: "slider.vertical.3") }
+                .tag(3)
         }
+        #if DEBUG
+        .task {
+            // `-demoPlay YES`: começa a tocar e abre o player (capturas de tela do CI).
+            guard UserDefaults.standard.bool(forKey: "demoPlay") else { return }
+            try? await Task.sleep(for: .seconds(1))
+            let album = library.albums.first { $0.tracks.contains(where: \.hasArtwork) }
+            player.play(album?.tracks ?? library.tracks(for: .all))
+            player.showFullPlayer = true
+        }
+        #endif
         .sheet(isPresented: $player.showFullPlayer) {
             NowPlayingView()
         }
