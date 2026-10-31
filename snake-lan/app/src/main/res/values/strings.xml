@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Cobra Rede</string>
+    <string name="subtitle">Snake na rede local · sem anúncios</string>
+    <string name="mode_versus">Modo Versus</string>
+    <string name="mode_duo">Modo Dupla</string>
+    <string name="host_game">Criar sala (host)</string>
+    <string name="join_game">Entrar na sala</string>
+    <string name="your_ip">Seu IP na Wi‑Fi:</string>
+    <string name="waiting_players">Aguardando jogadores…</string>
+    <string name="start_match">Iniciar partida</string>
+    <string name="host_ip_hint">IP do host (ex: 192.168.0.10)</string>
+    <string name="player_name_hint">Seu apelido</string>
+    <string name="connect">Conectar</string>
+    <string name="back">Voltar</string>
+    <string name="versus_desc">Todos contra todos na mesma rede.</string>
+    <string name="duo_desc">Duplas cooperam: mesma cor, sem colidir entre si.</string>
+    <string name="port_info">Porta: %1$d</string>
+    <string name="players_connected">Jogadores: %1$d</string>
+    <string name="you_died">Você caiu! Respawn em instantes…</string>
+    <string name="score">Pontos: %1$d</string>
+</resources>
