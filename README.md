@@ -58,3 +58,24 @@ e localmente com `bash .claude/skills/craft/tests/test_checks.sh`.
 
 Para usar a skill em todos os seus projetos, copie a pasta para
 `~/.claude/skills/craft/`.
+
+## NEON VIPER
+
+Arena local de serpentes para Android, sem anúncios e sem servidor externo.
+Até quatro celulares na mesma rede Wi-Fi se encontram automaticamente. Vagas
+livres viram bots.
+
+- **Dupla:** dois aliados sobrevivem a ondas de bots.
+- **Contra:** dois times de até duas pessoas jogam até restar um time.
+- **Treino:** uma serpente, sem rede.
+- **Controle:** joystick virtual ou arrastar o dedo, com impulso.
+
+O primeiro aparelho que não encontra uma sala torna-se o host autoritativo.
+Os outros enviam apenas a direção. Para gerar o APK de depuração:
+
+```bash
+./gradlew assembleDebug
+```
+
+O pacote fica em `app/build/outputs/apk/debug/app-debug.apk`. O roteiro de teste
+está em `docs/testing/neon-viper-smoke-test.md`.
