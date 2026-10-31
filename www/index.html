@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+  <meta name="theme-color" content="#07111f">
+  <link rel="icon" href="data:,">
+  <title>Snake Livre</title>
+  <link rel="stylesheet" href="css/game.css">
+</head>
+<body>
+  <canvas id="view"></canvas>
+  <div id="screens">
+    <section id="screen-home" class="screen">
+      <div class="panel">
+        <p class="eyebrow">sem anúncios · mesma Wi-Fi</p>
+        <h1>Snake Livre</h1>
+        <p class="lead">Quem cria a sala é o primeiro na rede. Os outros entram na mesma Wi-Fi, em dupla ou contra.</p>
+        <label class="field">Seu nome
+          <input id="name" maxlength="16" autocomplete="nickname" placeholder="Seu nome" enterkeyhint="done">
+        </label>
+        <div class="stack">
+          <button type="button" class="primary" id="btn-treino">Treino</button>
+          <button type="button" class="primary alt" id="btn-create">Criar sala</button>
+          <button type="button" class="ghost" id="btn-join">Entrar na sala</button>
+          <button type="button" class="ghost" id="btn-local">Neste aparelho</button>
+          <button type="button" class="texty" id="btn-help">Como jogar</button>
+        </div>
+        <p class="fine">Nada é enviado para a internet. Não tem anúncio nem conta.</p>
+      </div>
+    </section>
+
+    <section id="screen-local" class="screen">
+      <div class="panel">
+        <button type="button" class="back" id="local-back">Voltar</button>
+        <h2>Neste aparelho</h2>
+        <p class="lead">Cada pessoa fica com metade da tela. A da esquerda usa o lado esquerdo; a da direita, o outro.</p>
+        <label class="field">Segundo jogador
+          <input id="name2" maxlength="16" value="Parceiro" autocomplete="off">
+        </label>
+        <div class="modes" id="local-modes">
+          <button type="button" class="mode selected" id="loc-dupla" data-mode="dupla">
+            <span class="dots ally"><i></i><i></i></span>
+            <span><strong>Dupla</strong><small>vocês são um par</small></span>
+          </button>
+          <button type="button" class="mode" id="loc-contra" data-mode="contra">
+            <span class="dots foe"><i></i><i></i></span>
+            <span><strong>Contra</strong><small>um contra o outro</small></span>
+          </button>
+        </div>
+        <label class="check"><input type="checkbox" id="loc-bots" checked> Completar com bots</label>
+        <button type="button" class="primary" id="loc-go">Começar</button>
+      </div>
+    </section>
+
+    <section id="screen-lobby" class="screen">
+      <div class="panel">
+        <button type="button" class="back" id="lobby-back">Voltar</button>
+        <h2 id="lobby-title">Sala</h2>
+        <p class="ip" id="lobby-ip">…</p>
+        <p class="warn" id="lobby-warn" hidden></p>
+        <div class="modes">
+          <button type="button" class="mode" id="lob-contra" data-mode="contra">
+            <span class="dots foe"><i></i><i></i></span>
+            <span><strong>Contra</strong><small>cada um por si</small></span>
+          </button>
+          <button type="button" class="mode" id="lob-dupla" data-mode="dupla">
+            <span class="dots ally"><i></i><i></i></span>
+            <span><strong>Dupla</strong><small>pares de dois</small></span>
+          </button>
+        </div>
+        <label class="check"><input type="checkbox" id="lob-bots" checked> Completar com bots</label>
+        <div id="lobby-list"></div>
+        <p class="fine" id="lobby-note"></p>
+        <button type="button" class="primary" id="lobby-start">Iniciar partida</button>
+      </div>
+    </section>
+
+    <section id="screen-join" class="screen">
+      <div class="panel">
+        <button type="button" class="back" id="join-back">Voltar</button>
+        <h2>Entrar na sala</h2>
+        <p class="lead" id="join-status">Procurando salas na Wi-Fi…</p>
+        <div id="join-list"></div>
+        <label class="field">IP da sala
+          <input id="join-ip" inputmode="decimal" autocomplete="off" placeholder="192.168.0.10" spellcheck="false">
+        </label>
+        <button type="button" class="primary" id="join-go">Conectar</button>
+        <p class="fine">Se a sala não aparecer, peça o IP para quem criou. Os dois precisam estar na mesma Wi-Fi.</p>
+      </div>
+    </section>
+
+    <section id="screen-help" class="screen">
+      <div class="panel">
+        <button type="button" class="back" id="help-back">Voltar</button>
+        <h2>Como jogar</h2>
+        <ul class="help">
+          <li>Arraste o dedo para apontar. No computador, use o mouse. Espaço dá impulso.</li>
+          <li>Impulso acelera e gasta o corpo. As bolinhas aumentam o seu tamanho.</li>
+          <li>Encostar em outra cobra ou na borda elimina você. Dá para voltar em 3 segundos, pequeno.</li>
+          <li><strong>Contra:</strong> todo mundo é inimigo. Ganha a maior cobra aos 3 minutos.</li>
+          <li><strong>Dupla:</strong> a lista vira pares. A cobra do seu par não te mata. Ganha o par com mais tamanho.</li>
+          <li>Quem toca em criar sala é o anfitrião, o primeiro na rede. O outro celular entra na mesma Wi-Fi.</li>
+        </ul>
+      </div>
+    </section>
+  </div>
+
+  <div id="hud" hidden>
+    <div id="topbar">
+      <button type="button" id="mute" aria-pressed="false">Som on</button>
+      <div id="timer">3:00</div>
+      <div id="me-size">0</div>
+    </div>
+    <p id="me-partner"></p>
+    <p id="pair-totals"></p>
+    <ol id="board"></ol>
+    <div id="minimap-wrap"><canvas id="minimap" width="120" height="120"></canvas></div>
+    <div id="divider" hidden></div>
+    <div id="side-left" hidden></div>
+    <div id="side-right" hidden></div>
+    <button type="button" id="boost" aria-label="Impulso">Impulso</button>
+    <button type="button" id="boost2" aria-label="Impulso do jogador da direita" hidden>Impulso</button>
+    <div id="death" hidden></div>
+    <div id="result" hidden>
+      <div class="panel result-card">
+        <p class="eyebrow" id="result-kicker">fim de jogo</p>
+        <h2 id="result-title">Fim</h2>
+        <p id="result-sub"></p>
+        <div id="result-pairs"></div>
+        <ol id="result-rows"></ol>
+        <div class="stack">
+          <button type="button" class="primary" id="result-again">Jogar de novo</button>
+          <button type="button" class="ghost" id="result-leave">Sair</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="leave-modal" hidden>
+    <div class="panel">
+      <h2>Sair da partida?</h2>
+      <p id="leave-copy">Dá para voltar ao menu.</p>
+      <div class="row">
+        <button type="button" class="ghost" id="leave-stay">Ficar</button>
+        <button type="button" class="primary danger" id="leave-yes">Sair</button>
+      </div>
+    </div>
+  </div>
+  <div id="toast" hidden></div>
+
+  <script src="js/sim.js"></script>
+  <script src="js/session.js"></script>
+  <script src="js/render.js"></script>
+  <script src="js/audio.js"></script>
+  <script src="js/main.js"></script>
+</body>
+</html>

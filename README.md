@@ -1,3 +1,48 @@
+# Snake Livre
+
+Jogo no estilo snake.io, sem anúncios e sem servidor na internet. Quem cria a sala é o primeiro na rede; os outros celulares entram na mesma Wi-Fi. Dá para jogar em **dupla** (pares) ou **contra** (cada um por si).
+
+O APK pronto para instalar está em [`dist/snake-livre.apk`](dist/snake-livre.apk).
+
+## Instalar
+
+1. Copie `dist/snake-livre.apk` para o Android e abra o arquivo.
+2. Permita instalar apps desta origem, se o sistema pedir.
+3. Abra o Snake Livre. Os dois aparelhos precisam estar na mesma Wi-Fi. Dados móveis ligados às vezes mandam o jogo para a rede errada.
+
+Quem toca em **Criar sala** vira o anfitrião e vê o IP grande na tela. O outro toca em **Entrar na sala**. Se a sala não aparecer sozinha, digite esse IP. Wi-Fi de visitante costuma isolar os celulares: nesse caso nem o IP conecta, e os dois precisam de outra rede.
+
+## Modos
+
+- **Contra:** todo mundo é inimigo. Encostar em outra cobra ou na borda elimina. Ganha a maior cobra quando os 3 minutos acabam.
+- **Dupla:** a ordem da lista forma pares (1º com 2º, 3º com 4º). A cobra do seu par não te mata. Ganha o par com mais tamanho somado. As setas trocam quem joga com quem.
+- **Treino:** sozinho contra bots, sem relógio, para aprender.
+- **Neste aparelho:** duas pessoas no mesmo celular, cada uma com metade da tela.
+
+Quem morre volta em 3 segundos, pequeno. Impulso acelera e gasta o corpo. As bolinhas aumentam o tamanho. Dá para completar a arena com bots.
+
+## Privacidade
+
+Não tem anúncio, não tem conta e o jogo não fala com nenhum servidor. A permissão de internet só existe porque o Android exige isso para abrir uma conexão na rede local.
+
+## Desenvolvimento
+
+```bash
+npm test
+python3 -m http.server 4173 --directory www
+```
+
+O APK é um WebView com os arquivos de `www/`. A simulação roda no celular anfitrião; os outros só enviam a mira. Para gerar o APK de novo:
+
+```bash
+export ANDROID_HOME=/caminho/do/android-sdk
+bash tools/build-apk.sh
+```
+
+O SDK precisa da platform Android 35 e do build-tools 35. O APK de depuração é assinado com a chave local do SDK: se reinstalar um APK gerado em outro computador, desinstale o anterior antes.
+
+---
+
 # teste
 
 ## REA (Reverse Engineer Anything)

@@ -1,0 +1,10 @@
+{
+  "name": "snake-livre",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Snake Livre: jogo no estilo snake.io, sem anúncios, multiplayer na rede local.",
+  "scripts": {
+    "test": "node --test test/sim.test.js test/session.test.js test/render.test.js",
+    "start": "python3 -m http.server 4173 --directory www"
+  }
+}
