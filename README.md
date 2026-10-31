@@ -2,11 +2,14 @@
 
 Jogo no estilo snake.io, sem anúncios e sem servidor na internet. Quem cria a sala é o primeiro na rede; os outros celulares entram na mesma Wi-Fi. Dá para jogar em **dupla** (pares) ou **contra** (cada um por si).
 
-O APK pronto para instalar está em [`dist/snake-livre.apk`](dist/snake-livre.apk).
+Há duas pastas:
+
+- [`apk/`](apk/) — só o arquivo para instalar, [`apk/snake-livre.apk`](apk/snake-livre.apk).
+- [`criacao/`](criacao/) — o jogo, os testes e o projeto Android que gera esse APK.
 
 ## Instalar
 
-1. Copie `dist/snake-livre.apk` para o Android e abra o arquivo.
+1. Copie `apk/snake-livre.apk` para o Android e abra o arquivo.
 2. Permita instalar apps desta origem, se o sistema pedir.
 3. Abra o Snake Livre. Os dois aparelhos precisam estar na mesma Wi-Fi. Dados móveis ligados às vezes mandam o jogo para a rede errada.
 
@@ -27,16 +30,19 @@ Não tem anúncio, não tem conta e o jogo não fala com nenhum servidor. A perm
 
 ## Desenvolvimento
 
+Tudo isso fica em `criacao/`:
+
 ```bash
+cd criacao
 npm test
 python3 -m http.server 4173 --directory www
 ```
 
-O APK é um WebView com os arquivos de `www/`. A simulação roda no celular anfitrião; os outros só enviam a mira. Para gerar o APK de novo:
+O APK é um WebView com os arquivos de `criacao/www/`. A simulação roda no celular anfitrião; os outros só enviam a mira. Para gerar o APK de novo e colocar em `apk/`:
 
 ```bash
 export ANDROID_HOME=/caminho/do/android-sdk
-bash tools/build-apk.sh
+bash criacao/tools/build-apk.sh
 ```
 
 O SDK precisa da platform Android 35 e do build-tools 35. O APK de depuração é assinado com a chave local do SDK: se reinstalar um APK gerado em outro computador, desinstale o anterior antes.

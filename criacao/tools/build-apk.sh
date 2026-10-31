@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
-# Gera dist/snake-livre.apk. Precisa do Android SDK (platform 35 e build-tools 35)
-# em ANDROID_HOME e do Java 17+.
+# Gera ../apk/snake-livre.apk a partir desta pasta de criação.
+# Precisa do Android SDK (platform 35 e build-tools 35) em ANDROID_HOME e do Java 17+.
 set -euo pipefail
 cd "$(dirname "$0")/.."
 if [[ -z "${ANDROID_HOME:-}" ]]; then
@@ -14,6 +14,6 @@ if [[ ! -x ./gradlew ]]; then
   gradle wrapper --gradle-version 8.11.1
 fi
 ./gradlew assembleDebug
-mkdir -p ../dist
-cp -f app/build/outputs/apk/debug/app-debug.apk ../dist/snake-livre.apk
-echo "APK em dist/snake-livre.apk"
+mkdir -p ../../apk
+cp -f app/build/outputs/apk/debug/app-debug.apk ../../apk/snake-livre.apk
+echo "APK em apk/snake-livre.apk"

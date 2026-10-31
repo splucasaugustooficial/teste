@@ -3,19 +3,13 @@ name: Snake Livre
 on:
   push:
     paths:
-      - "www/**"
-      - "test/**"
-      - "package.json"
-      - "android/**"
-      - "tools/**"
+      - "criacao/**"
+      - "apk/**"
       - ".github/workflows/snake-livre.yml"
   pull_request:
     paths:
-      - "www/**"
-      - "test/**"
-      - "package.json"
-      - "android/**"
-      - "tools/**"
+      - "criacao/**"
+      - "apk/**"
       - ".github/workflows/snake-livre.yml"
 
 permissions:
@@ -30,4 +24,5 @@ jobs:
         with:
           node-version: 22
       - name: regras do jogo
+        working-directory: criacao
         run: npm test

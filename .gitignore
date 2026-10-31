@@ -1,8 +1,9 @@
 node_modules/
-android/.gradle/
-android/build/
-android/app/build/
-android/local.properties
-android/.idea/
+criacao/node_modules/
+criacao/android/.gradle/
+criacao/android/build/
+criacao/android/app/build/
+criacao/android/local.properties
+criacao/android/.idea/
 *.iml
 .DS_Store
