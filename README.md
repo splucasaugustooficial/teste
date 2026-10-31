@@ -2,7 +2,7 @@
 
 ## Cobra Rede (jogo Android)
 
-Projeto em [`snake-lan/`](snake-lan/) — snake.io na rede local, sem anúncios, modos **Versus** e **Dupla**. Veja o README do projeto para gerar o APK.
+Projeto em [`snake-lan/`](snake-lan/) — snake.io na rede local, sem anúncios. APK isolado em [`snake-lan/apk/`](snake-lan/apk/); build em [`snake-lan/config/`](snake-lan/config/).
 
 ## REA (Reverse Engineer Anything)
 

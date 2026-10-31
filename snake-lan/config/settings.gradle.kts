@@ -16,3 +16,4 @@ dependencyResolutionManagement {
 
 rootProject.name = "CobraRede"
 include(":app")
+project(":app").projectDir = file("../app")

@@ -1,9 +1,13 @@
+# Gradle (raiz de build = config/)
 /.gradle/
-/build/
+/config/.gradle/
+/config/build/
+/config/local.properties
 /app/build/
-/local.properties
-*.apk
-*.aab
+
+# APKs gerados (README versionado em apk/)
+/apk/*.apk
+
 .idea/
 *.iml
 .DS_Store

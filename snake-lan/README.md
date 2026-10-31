@@ -2,6 +2,22 @@
 
 Jogo estilo **snake.io** para Android, **sem anúncios**, com multiplayer na **mesma rede Wi‑Fi** (LAN).
 
+## Estrutura do projeto
+
+```
+snake-lan/
+├── apk/          ← APK instalável (pasta isolada)
+├── config/       ← Gradle, SDK, ProGuard (build)
+├── app/          ← Código-fonte Kotlin + recursos Android
+└── scripts/      ← build-apk.sh
+```
+
+| Pasta | Conteúdo |
+|-------|----------|
+| [`apk/`](apk/) | Somente `.apk` gerados + README |
+| [`config/`](config/) | `gradlew`, `gradle.properties`, wrapper, ProGuard |
+| [`app/`](app/) | Jogo (activities, engine, rede LAN) |
+
 ## Modos
 
 | Modo | Descrição |
@@ -25,17 +41,21 @@ Requisitos: JDK 17+, Android SDK (API 34).
 
 ```bash
 cd snake-lan
-export ANDROID_HOME=/caminho/para/android-sdk
-./gradlew assembleDebug
+cp config/local.properties.example config/local.properties
+# edite sdk.dir em config/local.properties
+chmod +x scripts/build-apk.sh
+./scripts/build-apk.sh
 ```
 
-APK de debug (pronto para instalar com “fontes desconhecidas”): `dist/CobraRede-debug.apk`
+Os APKs ficam **somente** em [`apk/`](apk/):
 
-Release (minificado, **sem assinatura de loja** — assine antes de publicar):
+- `apk/CobraRede-debug.apk` — instalação direta
+- `apk/CobraRede-release-unsigned.apk` — release minificado (assine antes da loja)
+
+Build manual (sem copiar para `apk/`):
 
 ```bash
-./gradlew assembleRelease
-# saída em dist/CobraRede-release-unsigned.apk
+cd config && ./gradlew assembleDebug
 ```
 
 ## Privacidade
