@@ -1,5 +1,9 @@
 # teste
 
+## Cobra Rede (jogo Android)
+
+Projeto em [`snake-lan/`](snake-lan/) — snake.io na rede local, sem anúncios, modos **Versus** e **Dupla**. Veja o README do projeto para gerar o APK.
+
 ## REA (Reverse Engineer Anything)
 
 Este repositório usa o REA oficial, publicado em
