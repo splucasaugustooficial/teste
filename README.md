@@ -2,10 +2,12 @@
 
 Jogo no estilo snake.io, sem anúncios e sem servidor na internet. Quem cria a sala é o primeiro na rede; os outros celulares entram na mesma Wi-Fi. Dá para jogar em **dupla** (pares) ou **contra** (cada um por si).
 
-Há duas pastas:
+Pastas:
 
-- [`apk/`](apk/) — só o arquivo para instalar, [`apk/snake-livre.apk`](apk/snake-livre.apk).
-- [`criacao/`](criacao/) — o jogo, os testes e o projeto Android que gera esse APK.
+- [`apk/`](apk/) — só o arquivo para instalar agora, [`apk/snake-livre.apk`](apk/snake-livre.apk).
+- [`backup/`](backup/) — cópias já publicadas. A 1.0.0 está em `backup/1.0.0/snake-livre.apk`.
+- [`criacao/`](criacao/) — a configuração e o projeto originais, da versão 1.0.0.
+- [`atualizacoes/`](atualizacoes/) — onde as próximas versões são feitas. O projeto da 1.0.0 continua em `criacao/`.
 
 ## Instalar
 
@@ -38,11 +40,13 @@ npm test
 python3 -m http.server 4173 --directory www
 ```
 
-O APK é um WebView com os arquivos de `criacao/www/`. A simulação roda no celular anfitrião; os outros só enviam a mira. Para gerar o APK de novo e colocar em `apk/`:
+O APK é um WebView com os arquivos de `criacao/www/`. A simulação roda no celular anfitrião; os outros só enviam a mira.
+
+A versão original se gera de novo com `bash criacao/tools/build-apk.sh`. As atualizações saem de `atualizacoes/`: aumente `versionName` em `atualizacoes/android/app/build.gradle.kts` e rode o script. Ele guarda o APK que estava em `apk/` dentro de `backup/` se essa cópia ainda não existir, e publica o novo em `apk/snake-livre.apk`.
 
 ```bash
 export ANDROID_HOME=/caminho/do/android-sdk
-bash criacao/tools/build-apk.sh
+bash atualizacoes/tools/build-apk.sh
 ```
 
 O SDK precisa da platform Android 35 e do build-tools 35. O APK de depuração é assinado com a chave local do SDK: se reinstalar um APK gerado em outro computador, desinstale o anterior antes.

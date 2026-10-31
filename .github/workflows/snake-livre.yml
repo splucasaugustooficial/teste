@@ -4,12 +4,16 @@ on:
   push:
     paths:
       - "criacao/**"
+      - "atualizacoes/**"
       - "apk/**"
+      - "backup/**"
       - ".github/workflows/snake-livre.yml"
   pull_request:
     paths:
       - "criacao/**"
+      - "atualizacoes/**"
       - "apk/**"
+      - "backup/**"
       - ".github/workflows/snake-livre.yml"
 
 permissions:
@@ -23,6 +27,9 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 22
-      - name: regras do jogo
+      - name: regras do jogo original
         working-directory: criacao
+        run: npm test
+      - name: regras da pasta de atualizações
+        working-directory: atualizacoes
         run: npm test

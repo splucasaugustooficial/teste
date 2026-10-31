@@ -5,5 +5,11 @@ criacao/android/build/
 criacao/android/app/build/
 criacao/android/local.properties
 criacao/android/.idea/
+atualizacoes/node_modules/
+atualizacoes/android/.gradle/
+atualizacoes/android/build/
+atualizacoes/android/app/build/
+atualizacoes/android/local.properties
+atualizacoes/android/.idea/
 *.iml
 .DS_Store
