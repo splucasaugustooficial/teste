@@ -1,60 +1,59 @@
-# teste
+# Cobra Arena
 
-## REA (Reverse Engineer Anything)
+Jogo no estilo **snake.io**, sem anúncios e sem compras. Dá para jogar sozinho, em dois no mesmo aparelho, ou em rede local (Wi‑Fi).
 
-Este repositório usa o REA oficial, publicado em
-[github.com/morluto/rea](https://github.com/morluto/rea) (pacote npm
-[`rea-agents`](https://www.npmjs.com/package/rea-agents)). Não use cópias ou
-forks com nome parecido.
+O **primeiro aparelho** que abrir a sala na rede vira o anfitrião. Os outros, no mesmo Wi‑Fi, entram sozinhos.
 
-### Claude Code
+## Modos
 
-O arquivo `.claude/settings.json` registra o marketplace `morluto/rea` e ativa o
-plugin `rea@rea`. Ao abrir o projeto no Claude Code e confiar na pasta, o Claude
-Code oferece a instalação do plugin. Para instalar manualmente:
+- **Contra** — cada cobra por si. Vale abate e pontuação.
+- **Dupla** — time de dois. Aliado não mata aliado; o placar é da equipe. Com duas pessoas, vocês jogam juntos contra os bots.
 
-```text
-/plugin marketplace add morluto/rea
-/plugin install rea@rea
-```
+## Como jogar
 
-Depois, reinicie o Claude Code e confira com `/mcp`.
+1. Instale o APK (`dist/CobraArena.apk`). No Android, permita fontes desconhecidas.
+2. Escolha um nome e o modo (Contra ou Dupla).
+3. **Jogar na rede local** — o primeiro cria a sala; os outros entram. O anfitrião toca em *Começar partida*.
+4. **2 jogadores neste aparelho** — dois joysticks (P1 à esquerda, P2 à direita).
+5. **Praticar sozinho** — arena com bots.
 
-### Terminal (CLI)
+Controles: arraste o joystick para virar, segure **TURBO** para acelerar (gasta tamanho). No teclado: WASD + espaço (P1), IJKL + Enter (P2).
+
+Bater no corpo de uma cobra inimiga elimina você. Sair da arena também. Ao morrer, o corpo vira comida e você volta em alguns segundos. A rodada dura 3 minutos.
+
+Não há anúncios, rastreamento nem loja.
+
+## APK
+
+O arquivo pronto fica em [`dist/CobraArena.apk`](dist/CobraArena.apk).
+
+Para gerar de novo (precisa do Android SDK):
 
 ```bash
-npm install --global rea-agents
-rea --help
+npm test
+node scripts/sync-android-assets.mjs
+export ANDROID_HOME="$HOME/android-sdk"
+echo "sdk.dir=$ANDROID_HOME" > android/local.properties
+cd android && ./gradlew assembleRelease
 ```
 
-Ou configure seus agentes com `npx rea-agents setup`.
+O APK sai em `android/app/build/outputs/apk/release/app-release.apk`.
 
-Requisitos: Node.js 22.x (>= 22.23.4), 24.x (>= 24.22.1) ou 26.12.1+, com npm.
-Análise de binários nativos também precisa de Hopper, Ghidra, IDA ou Kuna; veja o
-[guia de instalação](https://github.com/morluto/rea/blob/main/docs/installation.md).
+## Jogar no navegador (teste)
+
+```bash
+npm install
+npm start
+```
+
+Abra `http://localhost:4173`. A sala na rede do navegador usa este servidor; no celular, o próprio APK é o anfitrião.
+
+## Testes
+
+```bash
+npm test
+```
 
 ## Skill `craft`
 
-`.claude/skills/craft/` é uma skill do Claude Code que aplica um fluxo de
-engenharia de nível sênior a qualquer mudança de código: entender → provar o
-bug → planejar → implementar o mínimo → verificar com as checagens reais →
-relatar com honestidade. Ela é carregada automaticamente neste projeto; para
-forçar, use `/craft`.
-
-O script incluído descobre os comandos de formatação, lint, typecheck, build e
-teste do projeto (Node, Deno, Python, Rust, Go, .NET, Java, Elixir, Swift,
-Ruby, PHP e Makefile):
-
-```bash
-bash .claude/skills/craft/scripts/checks.sh                  # lista, por categoria
-bash .claude/skills/craft/scripts/checks.sh --run            # executa todas
-bash .claude/skills/craft/scripts/checks.sh --run --only lint,type --fail-fast
-bash .claude/skills/craft/scripts/checks.sh --json           # para automação
-```
-
-Checagens cuja ferramenta não está instalada aparecem como **puladas**, nunca
-como aprovadas. Os testes do script rodam no CI (`.github/workflows/craft.yml`)
-e localmente com `bash .claude/skills/craft/tests/test_checks.sh`.
-
-Para usar a skill em todos os seus projetos, copie a pasta para
-`~/.claude/skills/craft/`.
+`.claude/skills/craft/` continua neste repositório. O fluxo de checagem está em `package.json` (`npm test`).

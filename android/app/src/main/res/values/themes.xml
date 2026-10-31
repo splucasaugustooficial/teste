@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <style name="Theme.CobraArena" parent="android:Theme.DeviceDefault.NoActionBar">
+        <item name="android:windowFullscreen">true</item>
+        <item name="android:statusBarColor">#070b14</item>
+        <item name="android:navigationBarColor">#070b14</item>
+        <item name="android:windowBackground">#070b14</item>
+        <item name="android:colorBackground">#070b14</item>
+    </style>
+</resources>

@@ -1,0 +1,17 @@
+{
+  "name": "cobra-arena",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Jogo estilo snake.io sem anúncios, com multiplayer na rede local e modos Dupla e Contra.",
+  "scripts": {
+    "test": "node --test test/engine.test.mjs",
+    "start": "node server/lan-server.mjs",
+    "sync-android": "node scripts/sync-android-assets.mjs"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "dependencies": {
+    "ws": "^8.18.3"
+  }
+}

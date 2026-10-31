@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover" />
+    <meta name="theme-color" content="#070b14" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <title>Cobra Arena</title>
+    <link rel="stylesheet" href="css/game.css" />
+  </head>
+  <body>
+    <canvas id="game"></canvas>
+
+    <div id="hud" class="hud" style="display: none">
+      <div class="topbar">
+        <div class="chip" id="hud-score"><b>0</b> pts</div>
+        <div class="chip timer"><span class="mode-tag" id="hud-mode">CONTRA</span> · <span id="hud-timer">3:00</span></div>
+        <div class="board" id="hud-board"></div>
+      </div>
+      <div class="killfeed" id="killfeed"></div>
+      <div class="controls">
+        <div class="who l">P1 · WASD / toque</div>
+        <div class="who r" id="who2" style="display: none">P2 · IJKL</div>
+        <div class="pad left" id="pad1"><div class="knob"></div></div>
+        <button class="boost p1" id="boost1" type="button">TURBO</button>
+        <div class="pad right" id="pad2" style="display: none"><div class="knob"></div></div>
+        <button class="boost p2" id="boost2" type="button" style="display: none">TURBO</button>
+      </div>
+    </div>
+
+    <div id="menu" class="overlay">
+      <div class="card">
+        <div class="brand">
+          <div class="logo" aria-hidden="true"></div>
+          <div>
+            <h1>COBRA ARENA</h1>
+            <p>snake.io local · sem anúncios · sem loja</p>
+          </div>
+        </div>
+        <span class="free">100% offline depois de instalar</span>
+
+        <label for="player-name">Seu nome</label>
+        <input id="player-name" type="text" maxlength="14" placeholder="Cobra" autocomplete="nickname" />
+
+        <div class="modes">
+          <button class="mode on" type="button" data-mode="contra">
+            Contra
+            <small>Todo mundo contra todo mundo. Vale abate e pontuação.</small>
+          </button>
+          <button class="mode" type="button" data-mode="dupla">
+            Dupla
+            <small>Time de dois. Aliado não mata aliado. Placar da equipe.</small>
+          </button>
+        </div>
+
+        <div class="places">
+          <button class="cta" id="btn-net" type="button">Jogar na rede local</button>
+          <button class="ghost" id="btn-device" type="button">2 jogadores neste aparelho</button>
+          <button class="ghost" id="btn-solo" type="button">Praticar sozinho (com bots)</button>
+        </div>
+        <p class="help">
+          Na rede, o <b>primeiro aparelho</b> que entrar vira a sala. Os outros no mesmo Wi‑Fi entram sozinhos.
+          Toque no turbo para acelerar — gasta tamanho. Bater no corpo de uma cobra inimiga elimina você.
+        </p>
+      </div>
+    </div>
+
+    <div id="lobby" class="overlay hidden">
+      <div class="card">
+        <h2 style="margin: 0 0 8px">Sala local</h2>
+        <p id="lobby-status" class="help" style="margin-top: 0"></p>
+        <p id="lobby-ip" class="help"></p>
+        <ul class="lobby-list" id="lobby-list"></ul>
+        <button class="cta" id="btn-start-match" type="button">Começar partida</button>
+        <button class="ghost" id="btn-back-menu" type="button" style="margin-top: 8px; width: 100%">Voltar</button>
+      </div>
+    </div>
+
+    <div id="result" class="overlay hidden">
+      <div class="card result">
+        <h2 id="result-title">Fim</h2>
+        <div id="result-body"></div>
+        <button class="cta" id="btn-again" type="button" style="width: 100%; margin-top: 12px">Menu</button>
+      </div>
+    </div>
+
+    <div id="toast"></div>
+
+    <script src="js/engine.js"></script>
+    <script src="js/render.js"></script>
+    <script src="js/input.js"></script>
+    <script src="js/audio.js"></script>
+    <script src="js/net.js"></script>
+    <script src="js/main.js"></script>
+  </body>
+</html>
