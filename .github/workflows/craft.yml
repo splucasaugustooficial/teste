@@ -2,9 +2,9 @@ name: craft
 
 on:
   push:
-    paths: [".claude/skills/craft/**", ".github/workflows/craft.yml"]
+    paths: [".agents/skills/craft/**", ".claude/skills/craft/**", "AGENTS.md", ".github/workflows/craft.yml"]
   pull_request:
-    paths: [".claude/skills/craft/**", ".github/workflows/craft.yml"]
+    paths: [".agents/skills/craft/**", ".claude/skills/craft/**", "AGENTS.md", ".github/workflows/craft.yml"]
 
 permissions:
   contents: read
@@ -15,6 +15,10 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: shellcheck
-        run: shellcheck .claude/skills/craft/scripts/*.sh .claude/skills/craft/tests/*.sh
+        run: shellcheck .agents/skills/craft/scripts/*.sh .agents/skills/craft/tests/*.sh
       - name: testes do checks.sh
-        run: bash .claude/skills/craft/tests/test_checks.sh
+        run: bash .agents/skills/craft/tests/test_checks.sh
+      - name: testes do install.sh
+        run: bash .agents/skills/craft/tests/test_install.sh
+      - name: cópias da skill sincronizadas
+        run: bash .agents/skills/craft/scripts/install.sh --check

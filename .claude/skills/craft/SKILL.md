@@ -1,9 +1,13 @@
 ---
 name: craft
-description: Fluxo de engenharia de nível sênior para qualquer mudança de código não trivial — entender antes de tocar, provar o bug antes de corrigir, mudar o mínimo, verificar com as checagens reais do projeto e relatar com honestidade. Use sempre que for implementar uma feature, corrigir um bug, refatorar, investigar uma falha de CI ou teste, ou quando o usuário pedir "faça direito", "com qualidade", "nível produção", "sem quebrar nada" ou invocar /craft. Não use para perguntas que se respondem sem mexer em código.
+description: Fluxo de engenharia de nível sênior para qualquer mudança de código não trivial — entender antes de tocar, provar o bug antes de corrigir, mudar o mínimo, verificar com as checagens reais do projeto e relatar com honestidade. Use sempre que for implementar uma feature, corrigir um bug, refatorar, investigar uma falha de CI ou teste, ou quando o usuário pedir "faça direito", "com qualidade", "nível produção", "sem quebrar nada" ou chamar a skill craft pelo nome. Não use para perguntas que se respondem sem mexer em código.
 ---
 
 # Craft — engenharia que merece estrela
+
+> Skill portátil no padrão aberto Agent Skills: funciona em Claude Code,
+> Codex, Gemini CLI, GitHub Copilot, Cursor e outros agentes. Onde uma
+> instrução citar uma ferramenta que o seu agente não tem, use o equivalente.
 
 Código bom não é o que parece inteligente: é o que **funciona, é verificado e
 qualquer pessoa entende amanhã**. Este fluxo existe porque os erros mais caros
@@ -34,9 +38,13 @@ Na dúvida entre dois níveis, escolha o mais rigoroso.
   para conhecer o estado de partida:
 
   ```bash
-  bash .claude/skills/craft/scripts/checks.sh          # lista, por categoria
-  bash .claude/skills/craft/scripts/checks.sh --run    # executa todas
+  bash <pasta-da-skill>/scripts/checks.sh          # lista, por categoria
+  bash <pasta-da-skill>/scripts/checks.sh --run    # executa todas
   ```
+
+  `<pasta-da-skill>` é a pasta onde este `SKILL.md` está (por exemplo
+  `.agents/skills/craft` ou `.claude/skills/craft`). Todos os caminhos
+  relativos desta skill partem dela.
 
   O script lê `package.json`, `pyproject.toml`, `Cargo.toml`, `go.mod`,
   `Makefile`, `deno.json`, `.sln`, `mix.exs` e outros, marca ferramentas não
