@@ -1,0 +1,27 @@
+name: projects
+
+on:
+  push:
+    paths: ["projects/**", ".github/workflows/projects.yml"]
+  pull_request:
+    paths: ["projects/**", ".github/workflows/projects.yml"]
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        python: ["3.9", "3.13"]
+        project: [evalkit, ragbench, injection-guard, dataset-doctor]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python }}
+      - name: tests
+        working-directory: projects/${{ matrix.project }}
+        run: python -m unittest discover -s tests -v

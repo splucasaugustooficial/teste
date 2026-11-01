@@ -1,5 +1,8 @@
 # teste
 
+Laboratório de IA aplicada: skills para agentes e projetos de pesquisa em
+avaliação, RAG, segurança e dados. Veja [`projects/`](projects/).
+
 ## REA (Reverse Engineer Anything)
 
 Este repositório usa o REA oficial, publicado em
@@ -58,3 +61,57 @@ e localmente com `bash .claude/skills/craft/tests/test_checks.sh`.
 
 Para usar a skill em todos os seus projetos, copie a pasta para
 `~/.claude/skills/craft/`.
+
+## Skill `mcp-forge` — MCP de qualquer coisa, em qualquer IA
+
+`.agents/skills/mcp-forge/` cria servidores **MCP** (Model Context Protocol)
+para qualquer coisa: API REST, OpenAPI/Swagger, banco, CLI, arquivos ou lógica
+própria. Gera em TypeScript ou Python, testa o protocolo de verdade e registra
+nos clientes. Segue o padrão aberto **Agent Skills** (`SKILL.md`), então o mesmo
+arquivo funciona no Claude Code, Codex, Gemini CLI, GitHub Copilot, Cursor e em
+qualquer agente que leia o `AGENTS.md`.
+
+Peça ao seu agente: *"crie um MCP para a API do meu CRM"*, ou use direto:
+
+```bash
+F=.agents/skills/mcp-forge/scripts/forge.py      # só Python 3.9+, sem dependências
+
+python3 $F new .agents/skills/mcp-forge/examples/weather.json --out weather-mcp
+python3 $F new --openapi api.json --include 'order|customer' --max-tools 15 --out loja-mcp
+python3 $F smoke --call get_forecast --args '{"latitude":-23.5,"longitude":-46.6}' -- node weather-mcp/dist/index.js
+python3 $F register --name weather -- node "$PWD/weather-mcp/dist/index.js"   # Claude, Codex, Gemini, Cursor, VS Code...
+```
+
+| Comando | O que faz |
+|---|---|
+| `new` | spec JSON ou OpenAPI → projeto completo (auth, timeout, erros, README) |
+| `validate` | mostra todos os erros do spec de uma vez |
+| `smoke` | sobe **qualquer** servidor stdio e testa initialize, schemas, stdout limpo e uma chamada real |
+| `register` | imprime ou grava (`--write`) a configuração de 7 clientes |
+
+Instalar para todos os agentes da máquina (copia para `~/.agents/skills`,
+`~/.claude/skills`, `~/.codex/skills`, `~/.gemini/skills`, `~/.copilot/skills`
+e `~/.cursor/skills`, conforme o que estiver instalado):
+
+```bash
+bash .agents/skills/mcp-forge/scripts/install.sh            # --all, --dry-run, --uninstall
+```
+
+Testes: `python3 -m unittest discover -s .agents/skills/mcp-forge/tests`
+(`MCP_FORGE_E2E=1` também gera, compila e testa servidores reais em TS e
+Python). Rodam no CI em `.github/workflows/mcp-forge.yml`.
+
+> No Windows, ative `git config core.symlinks true` antes de clonar, ou copie
+> `.agents/skills/mcp-forge` para `.claude/skills/`.
+
+## Projetos de pesquisa em IA
+
+[`projects/`](projects/) reúne quatro projetos sem dependências, cada um com
+benchmark reproduzível, números publicados e limitações declaradas:
+
+| Projeto | Área | Resultado principal |
+|---|---|---|
+| [evalkit](projects/evalkit/) | Avaliação de LLMs | uma mudança que sobe a nota em 16,7 pontos ainda regride um caso; o diff por caso pega |
+| [ragbench](projects/ragbench/) | RAG | recall@k favorece chunks grandes; com orçamento de contexto igual a vantagem some |
+| [injection-guard](projects/injection-guard/) | Segurança | F1 0,955 nos dados de treino vs 0,571 em ataques inéditos |
+| [dataset-doctor](projects/dataset-doctor/) | Dados | acha exatamente os problemas plantados, zero alarmes falsos |
