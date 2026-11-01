@@ -13,12 +13,23 @@
   <!-- Papel de parede desfocado -->
   <div class="wallpaper" id="wallpaper"></div>
 
-  <!-- Relógio (canto superior direito, como no tvOS) -->
-  <div class="clock" id="clock">--:--</div>
+  <!-- Perfil + relógio (canto superior direito) -->
+  <div class="status">
+    <span class="who" id="who"></span>
+    <span class="clock" id="clock">--:--</span>
+  </div>
 
   <main id="screens">
+    <!-- Escolha de perfil -->
+    <section class="screen" data-screen="profiles">
+      <div class="profiles">
+        <h1>Quem está assistindo?</h1>
+        <div class="profile-row" id="profileRow"></div>
+      </div>
+    </section>
+
     <!-- Tela inicial: Top Shelf + grade de apps -->
-    <section class="screen active" data-screen="home">
+    <section class="screen" data-screen="home">
       <div class="shelf" id="shelf">
         <div class="shelf-bg" id="shelfBg"></div>
         <div class="shelf-info">
@@ -42,14 +53,15 @@
     </section>
 
     <section class="screen" data-screen="player">
-      <div class="player">
-        <canvas id="playerCanvas"></canvas>
+      <div class="player" id="player">
+        <div class="player-scene" id="playerScene"></div>
+        <div class="captions" id="captions"></div>
         <div class="play-glyph" id="playGlyph"></div>
         <div class="player-ui" id="playerUI">
           <div class="player-title" id="playerTitle"></div>
           <div class="scrub"><i id="playerProgress"></i><b id="playerKnob"></b></div>
           <div class="times"><span id="tElapsed">0:00</span><span id="tRemain">-0:00</span></div>
-          <div class="player-help">Enter: reproduzir/pausar · ⬅ ➡: 10 s · Esc: sair</div>
+          <div class="player-help">Enter reproduz/pausa · ⬅ ➡ 10 s · ⬇ informações, legendas e áudio · Esc sai</div>
         </div>
       </div>
     </section>
@@ -57,7 +69,7 @@
     <section class="screen" data-screen="live">
       <nav class="tabbar"><span class="tab static">Ao Vivo</span></nav>
       <div class="live">
-        <div class="live-preview"><canvas id="liveCanvas"></canvas><div class="live-badge">AO VIVO</div><div class="live-now" id="liveNow"></div></div>
+        <div class="live-preview"><div class="live-scene" id="liveScene"></div><div class="live-badge">AO VIVO</div><div class="live-now" id="liveNow"></div></div>
         <div class="list" id="guide"></div>
       </div>
     </section>
@@ -66,14 +78,14 @@
       <nav class="tabbar"><span class="tab static">Ouvindo agora</span></nav>
       <div class="music">
         <div class="now-playing">
-          <div class="artwork" id="artwork"><span id="artGlyph">♪</span></div>
+          <div class="artwork paused" id="artwork"></div>
           <h3 id="trackName">Nada tocando</h3>
           <p id="trackArtist">Escolha uma faixa</p>
           <div class="mini-scrub"><i id="musicProgress"></i></div>
           <div class="transport">
-            <button class="focusable round" data-action="music-prev" aria-label="Anterior">⏮</button>
-            <button class="focusable round big" data-action="music-toggle" id="musicToggle" aria-label="Reproduzir">▶</button>
-            <button class="focusable round" data-action="music-next" aria-label="Próxima">⏭</button>
+            <button class="focusable round" data-action="music-prev" aria-label="Anterior" data-sym="prev"></button>
+            <button class="focusable round big" data-action="music-toggle" id="musicToggle" aria-label="Reproduzir ou pausar" data-sym="play"></button>
+            <button class="focusable round" data-action="music-next" aria-label="Próxima" data-sym="next"></button>
           </div>
         </div>
         <div class="list" id="tracklist"></div>
@@ -81,7 +93,7 @@
     </section>
 
     <section class="screen" data-screen="photos">
-      <nav class="tabbar"><span class="tab static">Fotos</span></nav>
+      <nav class="tabbar"><span class="tab static">Memórias</span></nav>
       <div class="scroller"><div class="photo-grid" id="photoGrid"></div></div>
     </section>
 
@@ -91,7 +103,7 @@
 
     <section class="screen" data-screen="search">
       <div class="search">
-        <div class="search-field"><span class="mag">⌕</span><span id="searchText"></span><i class="caret"></i></div>
+        <div class="search-field"><span class="mag" data-sym="search"></span><span id="searchText"></span><i class="caret"></i></div>
         <div class="keyboard" id="keyboard"></div>
         <div class="scroller search-results" id="searchResults"></div>
       </div>
@@ -100,7 +112,7 @@
     <section class="screen" data-screen="settings">
       <div class="settings">
         <div class="settings-side">
-          <div class="settings-icon" id="settingsIcon">⚙︎</div>
+          <div class="settings-icon" id="settingsIcon"></div>
           <p id="settingsHint">Ajustes</p>
         </div>
         <div class="settings-main">
@@ -112,7 +124,7 @@
   </main>
 
   <div class="toast" id="toast"></div>
-  <footer class="hint">⬆⬇⬅➡ navegar · Enter selecionar · Esc voltar · H início · C Central de Controle</footer>
+  <footer class="hint">⬆⬇⬅➡ navegar · Enter selecionar · Esc voltar · H início · segure H ou C: Central de Controle</footer>
 
   <!-- Protetor de tela "aéreo" -->
   <div class="screensaver" id="screensaver">
@@ -121,6 +133,7 @@
     <div class="ss-place">Lençóis Maranhenses<br><small>Maranhão, Brasil</small></div>
   </div>
 
+  <script src="art.js"></script>
   <script src="app.js"></script>
 </body>
 </html>

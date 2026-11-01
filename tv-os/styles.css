@@ -58,8 +58,11 @@ button { font: inherit; color: inherit; background: none; border: 0; cursor: poi
 }
 :root[data-theme="light"] .wallpaper { opacity: .35; }
 
-.clock { position: fixed; top: 36px; right: 64px; z-index: 15; font-size: 1.15em; font-weight: 600; font-variant-numeric: tabular-nums; color: var(--text); text-shadow: 0 1px 8px rgba(0,0,0,.3); }
+.status { position: fixed; top: 30px; right: 64px; z-index: 15; display: flex; align-items: center; gap: 14px; }
+.clock { font-size: 1.15em; font-weight: 600; font-variant-numeric: tabular-nums; color: var(--text); text-shadow: 0 1px 8px rgba(0,0,0,.3); }
 body[data-screen="home"] .clock { color: #fff; }
+.who { width: 34px; height: 34px; border-radius: 50%; display: grid; place-items: center; font-weight: 700; font-size: .85em; color: #fff; box-shadow: 0 2px 8px rgba(0,0,0,.3); }
+.who.big { width: 52px; height: 52px; font-size: 1.2em; }
 
 /* ---------- Telas ---------- */
 #screens { position: fixed; inset: 0; z-index: 1; }
@@ -104,7 +107,7 @@ body[data-screen="home"] .clock { color: #fff; }
 .tile .cap small { display: block; color: var(--faint); font-weight: 400; }
 .tile .glyph { font-size: 3em; filter: drop-shadow(0 4px 10px rgba(0,0,0,.25)); }
 .tile .title-on-art { position: absolute; left: 18px; bottom: 16px; right: 18px; font-weight: 700; font-size: 1.15em; text-align: left; text-shadow: 0 2px 10px rgba(0,0,0,.5); }
-.tile .bar { position: absolute; left: 14px; right: 14px; bottom: 8px; height: 4px; border-radius: 4px; background: rgba(255,255,255,.3); overflow: hidden; }
+.tile .bar { z-index: 3; position: absolute; left: 14px; right: 14px; bottom: 8px; height: 4px; border-radius: 4px; background: rgba(255,255,255,.3); overflow: hidden; }
 .tile .bar i { display: block; height: 100%; background: #fff; }
 
 .tile.icon .art { width: 232px; aspect-ratio: 16/9.6; border-radius: 16px; }
@@ -218,8 +221,8 @@ body[data-screen="home"] .clock { color: #fff; }
 /* ---------- Fotos ---------- */
 .photo-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 44px 40px; padding: 30px 80px; }
 .photo-grid .tile .art { width: 100%; aspect-ratio: 16/10; }
-.lightbox { position: fixed; inset: 0; z-index: 30; display: grid; place-items: center; font-size: 13em; color: #fff; animation: fadeIn .3s var(--ease); }
-.lightbox small { position: absolute; bottom: 48px; font-size: 18px; padding: 10px 22px; border-radius: 999px; background: rgba(60,60,67,.5); backdrop-filter: blur(20px); }
+.lightbox { position: fixed; inset: 0; z-index: 30; display: grid; place-items: center; color: #fff; overflow: hidden; background: #000; animation: fadeIn .3s var(--ease); }
+.lightbox small { position: absolute; z-index: 2; bottom: 48px; font-size: 18px; padding: 10px 22px; border-radius: 999px; background: rgba(60,60,67,.5); backdrop-filter: blur(20px); }
 @keyframes fadeIn { from { opacity: 0; transform: scale(1.04); } }
 
 /* ---------- Clima ---------- */
@@ -263,10 +266,10 @@ body[data-screen="home"] .clock { color: #fff; }
 .cc-grid .li > span:first-child { font-size: 1.6em; }
 
 /* ---------- Toast / dica / protetor ---------- */
-.toast { position: fixed; top: 30px; left: 50%; transform: translate(-50%, -16px); z-index: 60; padding: 14px 26px; border-radius: 999px; background: var(--glass-strong); backdrop-filter: blur(30px); -webkit-backdrop-filter: blur(30px); font-weight: 600; opacity: 0; transition: .35s var(--ease); pointer-events: none; }
-.toast.show { opacity: 1; transform: translate(-50%, 0); }
+.toast { position: fixed; top: 92px; right: 64px; transform: translateY(-12px); z-index: 60; padding: 14px 26px; border-radius: 999px; background: var(--glass-strong); backdrop-filter: blur(30px); -webkit-backdrop-filter: blur(30px); font-weight: 600; opacity: 0; transition: .35s var(--ease); pointer-events: none; }
+.toast.show { opacity: 1; transform: none; }
 .hint { position: fixed; bottom: 14px; left: 0; right: 0; z-index: 5; text-align: center; color: var(--faint); font-size: .7em; pointer-events: none; }
-body:not([data-screen="home"]) .hint, body[data-screen="player"] .clock { display: none; }
+body:not([data-screen="home"]) .hint, body[data-screen="player"] .status, body[data-screen="profiles"] .who { display: none; }
 
 .screensaver { position: fixed; inset: 0; z-index: 90; background: #000; opacity: 0; pointer-events: none; transition: opacity 1.2s; overflow: hidden; color: #fff; }
 .screensaver.on { opacity: 1; pointer-events: auto; }
@@ -291,3 +294,95 @@ body:not([data-screen="home"]) .hint, body[data-screen="player"] .clock { displa
   .settings-main { padding: 90px 24px 60px; }
   .photo-grid { grid-template-columns: repeat(2, 1fr); padding: 20px 24px; }
 }
+
+/* =================================================================== v3 */
+/* Arte em SVG com camadas e parallax */
+.art > svg { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
+.art .L { transform: translate(calc(var(--px, 0) * var(--d, 0) * 1px), calc(var(--py, 0) * var(--d, 0) * 1px)); transition: transform .35s var(--ease); }
+.tile.focused .art .L { transition-duration: .2s; }
+.tile .art::after { z-index: 2; }
+
+/* Símbolos */
+.sym { width: 1.15em; height: 1.15em; display: inline-block; vertical-align: -0.2em; flex: none; }
+.sym-wrap { display: inline-flex; }
+.pill .sym { width: 1.05em; height: 1.05em; }
+.pill.circle .sym { width: 24px; height: 24px; }
+.round .sym { width: 26px; height: 26px; }
+.round.big .sym { width: 32px; height: 32px; }
+.mag .sym { width: .9em; height: .9em; }
+.settings-icon .sym { width: 48%; height: 48%; color: #fff; filter: drop-shadow(0 6px 14px rgba(0,0,0,.25)); }
+.li-ico { width: 34px; height: 34px; border-radius: 9px; display: grid; place-items: center; color: #fff; flex: none; }
+.li-ico .sym { width: 20px; height: 20px; }
+.li.focused .li-ico { box-shadow: 0 2px 6px rgba(0,0,0,.25); }
+
+/* Movimento lento de câmera nas cenas grandes */
+@keyframes kenburns { from { transform: scale(1.03) translate(0, 0); } to { transform: scale(1.14) translate(-2.5%, -1.5%); } }
+.shelf-bg > svg, .hero-bg > svg, .player-scene > svg, .live-scene > svg, .lightbox > svg { position: absolute; inset: 0; width: 100%; height: 100%; animation: kenburns 38s ease-in-out infinite alternate; }
+.player.paused .player-scene > svg { animation-play-state: paused; }
+.player-scene, .live-scene { position: absolute; inset: 0; overflow: hidden; }
+.live-scene > svg { animation-duration: 20s; }
+.live-now small { display: block; opacity: .75; font-size: .8em; margin-bottom: 2px; }
+
+/* Legendas */
+.captions { position: absolute; left: 50%; bottom: 200px; transform: translateX(-50%); max-width: 70%; text-align: center; font-size: 1.7em; font-weight: 600; color: #fff; background: rgba(0,0,0,.55); padding: 8px 18px; border-radius: 10px; opacity: 0; transition: opacity .2s, bottom .5s var(--ease); pointer-events: none; }
+.captions.on { opacity: 1; }
+.player.ui-idle .captions { bottom: 80px; }
+.play-glyph .sym { width: 52px; height: 52px; }
+.play-glyph { font-size: 1.1em; font-weight: 700; }
+
+/* Painel de informações do player */
+.info-panel { position: fixed; inset: 0; z-index: 30; background: linear-gradient(rgba(0,0,0,.55), transparent 70%); animation: fadeIn .25s var(--ease); color: #fff; }
+.info-inner { margin: 28px 64px 0; padding: 20px 30px 30px; border-radius: 28px; background: rgba(36, 36, 40, .72); backdrop-filter: blur(40px) saturate(1.6); -webkit-backdrop-filter: blur(40px) saturate(1.6); box-shadow: 0 30px 60px rgba(0,0,0,.4); animation: slideDown .35s var(--ease); }
+@keyframes slideDown { from { transform: translateY(-30px); opacity: 0; } }
+.info-tabs { display: flex; justify-content: center; gap: 6px; margin-bottom: 22px; }
+.info-panel .tab { display: inline-flex; gap: 8px; align-items: center; color: rgba(255,255,255,.65); }
+.info-panel .tab.selected { color: #fff; background: rgba(255,255,255,.14); }
+.info-panel .tab.focused, .info-panel .pill.focused { background: #fff; color: #000; }
+.info-row { display: flex; gap: 28px; align-items: flex-start; }
+.info-poster { position: relative; width: 120px; aspect-ratio: 2/3; border-radius: 12px; overflow: hidden; flex: none; box-shadow: 0 10px 24px rgba(0,0,0,.4); }
+.info-poster > svg { position: absolute; inset: 0; width: 100%; height: 100%; }
+.info-text h2 { font-size: 1.6em; margin-bottom: 8px; }
+.info-text p { opacity: .85; line-height: 1.45; max-width: 900px; }
+.opt-row { display: flex; gap: 14px; justify-content: center; flex-wrap: wrap; padding: 10px 0; }
+.pill.opt { background: rgba(255,255,255,.12); }
+
+/* Perfis */
+.profiles { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 64px; }
+.profiles h1 { font-size: 2.6em; font-weight: 700; letter-spacing: -.02em; }
+.profile-row { display: flex; gap: 60px; }
+.tile.person .art { width: 180px; aspect-ratio: 1; border-radius: 50%; }
+.tile.person .cap { text-align: center; }
+.tile.person.small .art { width: 132px; }
+.tile.person.small .initials { font-size: 2.2em; }
+.initials { position: relative; z-index: 1; font-size: 3.4em; font-weight: 700; color: #fff; letter-spacing: -.02em; text-shadow: 0 2px 10px rgba(0,0,0,.2); }
+
+/* Detalhes */
+.about-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 24px; padding: 18px 80px 40px; }
+.about-grid div { color: var(--text); line-height: 1.4; }
+.about-grid small { display: block; color: var(--muted); font-size: .8em; text-transform: uppercase; letter-spacing: .06em; margin-bottom: 4px; }
+.meta b { margin-left: 2px; }
+
+/* Ao vivo: progresso do programa */
+.prog { width: 90px; height: 5px; border-radius: 5px; background: var(--faint); overflow: hidden; flex: none; }
+.prog i { display: block; height: 100%; background: var(--text); }
+.li.focused .prog { background: rgba(0,0,0,.15); }
+.li.focused .prog i { background: currentColor; }
+.li.current:not(.focused) { box-shadow: inset 3px 0 0 var(--accent); }
+
+/* Música */
+.artwork { position: relative; overflow: hidden; color: rgba(255,255,255,.5); }
+.artwork > svg { position: absolute; inset: 0; width: 100%; height: 100%; }
+.artwork > svg.sym { position: static; width: 40%; height: 40%; }
+.thumb { position: relative; width: 52px; height: 52px; border-radius: 8px; overflow: hidden; flex: none; }
+.thumb > svg { position: absolute; inset: 0; width: 100%; height: 100%; }
+
+/* Clima */
+.weather-now { display: flex; align-items: center; justify-content: center; gap: 40px; text-align: left; }
+.weather-now .wx { width: 150px; height: 150px; filter: drop-shadow(0 10px 30px rgba(0,0,0,.15)); }
+.forecast .wx { width: 46px; height: 46px; }
+
+/* Central de Controle */
+.cc-profile { display: flex; align-items: center; gap: 14px; padding: 6px 8px 14px; font-weight: 600; }
+.cc-profile small { display: block; color: var(--muted); font-weight: 400; }
+.cc-grid .li .sym { width: 28px; height: 28px; }
+.cc-grid .li.wide { grid-column: span 2; min-height: 90px; }
