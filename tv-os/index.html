@@ -1,0 +1,126 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Aurora TV OS</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <!-- Boot -->
+  <div id="boot" class="boot">
+    <div class="boot-logo">aurora<span>tv</span></div>
+    <div class="boot-bar"><i></i></div>
+  </div>
+
+  <!-- Barra superior -->
+  <header class="topbar">
+    <div class="profile"><span class="avatar" id="avatar">A</span><span id="profileName">Sala de estar</span></div>
+    <div class="status">
+      <span id="weatherMini">☀ 26°</span>
+      <span class="wifi" title="Wi-Fi conectado">📶</span>
+      <span id="clock">--:--</span>
+    </div>
+  </header>
+
+  <!-- Telas -->
+  <main id="screens">
+    <section class="screen active" data-screen="home">
+      <div class="hero" id="hero">
+        <div class="hero-text">
+          <small id="heroTag">Em destaque</small>
+          <h1 id="heroTitle">Bem-vindo</h1>
+          <p id="heroDesc">Use as setas do controle para navegar.</p>
+        </div>
+      </div>
+      <div class="rows" id="homeRows"></div>
+    </section>
+
+    <section class="screen" data-screen="movies">
+      <h2 class="screen-title">Filmes &amp; Séries</h2>
+      <div class="rows" id="movieRows"></div>
+    </section>
+
+    <section class="screen" data-screen="details">
+      <div class="details" id="details"></div>
+    </section>
+
+    <section class="screen" data-screen="player">
+      <div class="player" id="player">
+        <canvas id="playerCanvas"></canvas>
+        <div class="player-ui">
+          <div class="player-title" id="playerTitle"></div>
+          <div class="progress"><i id="playerProgress"></i></div>
+          <div class="player-controls">
+            <button class="focusable ctrl" data-action="seek" data-delta="-10">⏪ 10s</button>
+            <button class="focusable ctrl" data-action="toggle" id="playPause">⏸ Pausar</button>
+            <button class="focusable ctrl" data-action="seek" data-delta="10">10s ⏩</button>
+          </div>
+          <div class="player-time" id="playerTime">0:00 / 0:00</div>
+        </div>
+      </div>
+    </section>
+
+    <section class="screen" data-screen="live">
+      <h2 class="screen-title">TV ao Vivo</h2>
+      <div class="live">
+        <div class="live-preview"><canvas id="liveCanvas"></canvas><div class="live-badge">● AO VIVO</div><div class="live-now" id="liveNow"></div></div>
+        <div class="guide" id="guide"></div>
+      </div>
+    </section>
+
+    <section class="screen" data-screen="music">
+      <h2 class="screen-title">Música</h2>
+      <div class="music">
+        <div class="now-playing">
+          <div class="disc" id="disc"></div>
+          <h3 id="trackName">—</h3>
+          <p id="trackArtist">Selecione uma faixa</p>
+          <div class="eq" id="eq"></div>
+          <div class="player-controls">
+            <button class="focusable ctrl" data-action="music-prev">⏮</button>
+            <button class="focusable ctrl" data-action="music-toggle" id="musicToggle">▶</button>
+            <button class="focusable ctrl" data-action="music-next">⏭</button>
+          </div>
+        </div>
+        <ol class="tracklist" id="tracklist"></ol>
+      </div>
+    </section>
+
+    <section class="screen" data-screen="photos">
+      <h2 class="screen-title">Fotos</h2>
+      <div class="photo-grid" id="photoGrid"></div>
+    </section>
+
+    <section class="screen" data-screen="weather">
+      <h2 class="screen-title">Clima</h2>
+      <div class="weather" id="weather"></div>
+    </section>
+
+    <section class="screen" data-screen="search">
+      <h2 class="screen-title">Buscar</h2>
+      <div class="search">
+        <div class="search-box" id="searchBox"><span id="searchText"></span><i class="caret"></i></div>
+        <div class="keyboard" id="keyboard"></div>
+        <div class="search-results rows" id="searchResults"></div>
+      </div>
+    </section>
+
+    <section class="screen" data-screen="settings">
+      <h2 class="screen-title">Configurações</h2>
+      <div class="settings" id="settings"></div>
+    </section>
+  </main>
+
+  <!-- Toast -->
+  <div class="toast" id="toast"></div>
+
+  <!-- Dica de controle -->
+  <footer class="hint">⬆⬇⬅➡ navegar · <b>Enter</b> selecionar · <b>Esc/Backspace</b> voltar · <b>H</b> início</footer>
+
+  <!-- Protetor de tela -->
+  <div class="screensaver" id="screensaver"><div class="ss-clock" id="ssClock"></div></div>
+
+  <script src="app.js"></script>
+</body>
+</html>
