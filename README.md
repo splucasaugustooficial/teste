@@ -1,5 +1,8 @@
 # teste
 
+Laboratório de IA aplicada: skills para agentes e projetos de pesquisa em
+avaliação, RAG, segurança e dados. Veja [`projects/`](projects/).
+
 ## REA (Reverse Engineer Anything)
 
 Este repositório usa o REA oficial, publicado em
@@ -100,3 +103,15 @@ Python). Rodam no CI em `.github/workflows/mcp-forge.yml`.
 
 > No Windows, ative `git config core.symlinks true` antes de clonar, ou copie
 > `.agents/skills/mcp-forge` para `.claude/skills/`.
+
+## Projetos de pesquisa em IA
+
+[`projects/`](projects/) reúne quatro projetos sem dependências, cada um com
+benchmark reproduzível, números publicados e limitações declaradas:
+
+| Projeto | Área | Resultado principal |
+|---|---|---|
+| [evalkit](projects/evalkit/) | Avaliação de LLMs | uma mudança que sobe a nota em 16,7 pontos ainda regride um caso; o diff por caso pega |
+| [ragbench](projects/ragbench/) | RAG | recall@k favorece chunks grandes; com orçamento de contexto igual a vantagem some |
+| [injection-guard](projects/injection-guard/) | Segurança | F1 0,955 nos dados de treino vs 0,571 em ataques inéditos |
+| [dataset-doctor](projects/dataset-doctor/) | Dados | acha exatamente os problemas plantados, zero alarmes falsos |

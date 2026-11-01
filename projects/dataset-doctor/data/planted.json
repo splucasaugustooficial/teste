@@ -1,0 +1,39 @@
+{
+  "exact_duplicates": [
+    [
+      3,
+      30
+    ]
+  ],
+  "near_duplicates": [
+    [
+      5,
+      31
+    ]
+  ],
+  "pii": {
+    "32": "email",
+    "33": "phone",
+    "34": "cpf",
+    "35": "cnpj",
+    "36": "credit_card",
+    "37": "ipv4"
+  },
+  "too_short": [
+    41
+  ],
+  "length_outliers": [
+    42
+  ],
+  "contaminated_test_items": [
+    [
+      2,
+      10
+    ]
+  ],
+  "decoys": [
+    38,
+    39,
+    40
+  ]
+}

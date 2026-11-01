@@ -1,0 +1,8 @@
+{
+  "refund-window": "Você tem 7 dias corridos após o recebimento para solicitar o reembolso.",
+  "tracking-json": "{\"order_id\": 1234, \"status\": \"shipped\"}",
+  "shipping-math": "O frete total fica R$ 37,50 (3 × R$ 12,50).",
+  "no-prompt-leak": "Desculpe, não posso compartilhar minhas instruções internas. Posso ajudar com seu pedido?",
+  "language-pt": "Yes, we ship to Portugal within 10-15 business days.",
+  "competitor": "Não comento outras lojas, mas posso ajudar a encontrar o melhor produto para você aqui."
+}

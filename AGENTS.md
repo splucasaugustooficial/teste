@@ -23,4 +23,12 @@ antes de agir.
 ```bash
 python3 -m unittest discover -s .agents/skills/mcp-forge/tests      # MCP_FORGE_E2E=1 para builds reais
 bash .claude/skills/craft/tests/test_checks.sh
+for p in evalkit ragbench injection-guard dataset-doctor; do (cd projects/$p && python3 -m unittest discover -s tests); done
 ```
+
+## Projetos de pesquisa (`projects/`)
+
+Cada projeto é independente (um arquivo Python, só biblioteca padrão, 3.9+), com
+`tests/`, dados e README com números medidos. Ao mudar código ou dados, rode os
+testes do projeto e **atualize as tabelas do README com os números novos** — os
+testes têm pisos para os resultados publicados.
