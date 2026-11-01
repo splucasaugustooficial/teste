@@ -1,0 +1,30 @@
+{
+  "openapi": "3.0.3",
+  "info": { "title": "Pet Store", "version": "1.0.0", "description": "A tiny pet store." },
+  "servers": [{ "url": "https://{env}.example.com/v1", "variables": { "env": { "default": "api" } } }],
+  "components": {
+    "securitySchemes": { "key": { "type": "apiKey", "in": "header", "name": "X-API-Key" } },
+    "parameters": { "PetId": { "name": "petId", "in": "path", "required": true, "schema": { "type": "integer" }, "description": "Pet id" } },
+    "schemas": {
+      "NewPet": { "type": "object", "required": ["name"], "properties": {
+        "name": { "type": "string", "description": "Pet name" },
+        "tag": { "type": "string", "enum": ["dog", "cat"] },
+        "vaccines": { "type": "array", "items": { "type": "string" } } } }
+    }
+  },
+  "paths": {
+    "/pets": {
+      "get": { "operationId": "listPets", "summary": "List all pets in the store, newest first",
+        "parameters": [ { "name": "limit", "in": "query", "schema": { "type": "integer" } },
+                        { "name": "X-API-Key", "in": "header", "schema": { "type": "string" } } ] },
+      "post": { "operationId": "createPet", "summary": "Create a pet",
+        "requestBody": { "required": true, "content": { "application/json": { "schema": { "$ref": "#/components/schemas/NewPet" } } } } }
+    },
+    "/pets/{petId}": {
+      "parameters": [ { "$ref": "#/components/parameters/PetId" } ],
+      "get": { "operationId": "showPetById", "summary": "Info for a specific pet" },
+      "delete": { "operationId": "deletePet", "summary": "Delete a pet forever" },
+      "put": { "operationId": "oldUpdate", "deprecated": true, "summary": "old" }
+    }
+  }
+}

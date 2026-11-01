@@ -1,0 +1,42 @@
+{
+  "name": "weather",
+  "description": "Weather forecasts and geocoding from Open-Meteo (free, no API key).",
+  "language": "typescript",
+  "base_url": "https://api.open-meteo.com/v1",
+  "auth": { "type": "none" },
+  "tools": [
+    {
+      "name": "find_location",
+      "description": "Search a city or place by name and return its latitude, longitude, country and timezone. Call this first when the user gives a place name instead of coordinates.",
+      "method": "GET",
+      "path": "https://geocoding-api.open-meteo.com/v1/search",
+      "params": {
+        "name": { "type": "string", "required": true, "description": "Place name, e.g. 'São Paulo'" },
+        "count": { "type": "integer", "description": "Max results (1-10), default 5" },
+        "language": { "type": "string", "description": "Language for names, e.g. 'pt' or 'en'" }
+      }
+    },
+    {
+      "name": "get_forecast",
+      "description": "Get the current weather and a daily forecast (up to 16 days) for a latitude/longitude. Use find_location first if you only have a place name.",
+      "method": "GET",
+      "path": "/forecast",
+      "params": {
+        "latitude": { "type": "number", "required": true, "description": "Latitude in decimal degrees" },
+        "longitude": { "type": "number", "required": true, "description": "Longitude in decimal degrees" },
+        "current": { "type": "string", "description": "Comma-separated current variables, e.g. 'temperature_2m,wind_speed_10m'" },
+        "daily": { "type": "string", "description": "Comma-separated daily variables, e.g. 'temperature_2m_max,precipitation_sum'" },
+        "forecast_days": { "type": "integer", "description": "Number of days, 1-16 (default 7)" },
+        "timezone": { "type": "string", "description": "IANA timezone or 'auto'" }
+      }
+    },
+    {
+      "name": "clothing_advice",
+      "description": "Turn a forecast into short clothing advice for the user. Custom logic: no HTTP call, implemented by hand in the server.",
+      "params": {
+        "temperature_c": { "type": "number", "required": true, "description": "Temperature in °C" },
+        "rain_mm": { "type": "number", "description": "Expected precipitation in mm" }
+      }
+    }
+  ]
+}
