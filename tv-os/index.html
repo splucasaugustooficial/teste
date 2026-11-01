@@ -8,118 +8,118 @@
 </head>
 <body>
   <!-- Boot -->
-  <div id="boot" class="boot">
-    <div class="boot-logo">aurora<span>tv</span></div>
-    <div class="boot-bar"><i></i></div>
-  </div>
+  <div id="boot" class="boot"><div class="boot-logo">aurora</div></div>
 
-  <!-- Barra superior -->
-  <header class="topbar">
-    <div class="profile"><span class="avatar" id="avatar">A</span><span id="profileName">Sala de estar</span></div>
-    <div class="status">
-      <span id="weatherMini">☀ 26°</span>
-      <span class="wifi" title="Wi-Fi conectado">📶</span>
-      <span id="clock">--:--</span>
-    </div>
-  </header>
+  <!-- Papel de parede desfocado -->
+  <div class="wallpaper" id="wallpaper"></div>
 
-  <!-- Telas -->
+  <!-- Relógio (canto superior direito, como no tvOS) -->
+  <div class="clock" id="clock">--:--</div>
+
   <main id="screens">
+    <!-- Tela inicial: Top Shelf + grade de apps -->
     <section class="screen active" data-screen="home">
-      <div class="hero" id="hero">
-        <div class="hero-text">
-          <small id="heroTag">Em destaque</small>
-          <h1 id="heroTitle">Bem-vindo</h1>
-          <p id="heroDesc">Use as setas do controle para navegar.</p>
+      <div class="shelf" id="shelf">
+        <div class="shelf-bg" id="shelfBg"></div>
+        <div class="shelf-info">
+          <small id="shelfTag"></small>
+          <h1 id="shelfTitle"></h1>
+          <p id="shelfDesc"></p>
         </div>
+        <div class="shelf-row" id="shelfRow"></div>
       </div>
-      <div class="rows" id="homeRows"></div>
+      <div class="app-grid" id="appGrid"></div>
     </section>
 
+    <!-- App TV: abas no topo -->
     <section class="screen" data-screen="movies">
-      <h2 class="screen-title">Filmes &amp; Séries</h2>
-      <div class="rows" id="movieRows"></div>
+      <nav class="tabbar" id="movieTabs"></nav>
+      <div class="scroller" id="movieContent"></div>
     </section>
 
     <section class="screen" data-screen="details">
-      <div class="details" id="details"></div>
+      <div class="scroller" id="details"></div>
     </section>
 
     <section class="screen" data-screen="player">
-      <div class="player" id="player">
+      <div class="player">
         <canvas id="playerCanvas"></canvas>
-        <div class="player-ui">
+        <div class="play-glyph" id="playGlyph"></div>
+        <div class="player-ui" id="playerUI">
           <div class="player-title" id="playerTitle"></div>
-          <div class="progress"><i id="playerProgress"></i></div>
-          <div class="player-controls">
-            <button class="focusable ctrl" data-action="seek" data-delta="-10">⏪ 10s</button>
-            <button class="focusable ctrl" data-action="toggle" id="playPause">⏸ Pausar</button>
-            <button class="focusable ctrl" data-action="seek" data-delta="10">10s ⏩</button>
-          </div>
-          <div class="player-time" id="playerTime">0:00 / 0:00</div>
+          <div class="scrub"><i id="playerProgress"></i><b id="playerKnob"></b></div>
+          <div class="times"><span id="tElapsed">0:00</span><span id="tRemain">-0:00</span></div>
+          <div class="player-help">Enter: reproduzir/pausar · ⬅ ➡: 10 s · Esc: sair</div>
         </div>
       </div>
     </section>
 
     <section class="screen" data-screen="live">
-      <h2 class="screen-title">TV ao Vivo</h2>
+      <nav class="tabbar"><span class="tab static">Ao Vivo</span></nav>
       <div class="live">
-        <div class="live-preview"><canvas id="liveCanvas"></canvas><div class="live-badge">● AO VIVO</div><div class="live-now" id="liveNow"></div></div>
-        <div class="guide" id="guide"></div>
+        <div class="live-preview"><canvas id="liveCanvas"></canvas><div class="live-badge">AO VIVO</div><div class="live-now" id="liveNow"></div></div>
+        <div class="list" id="guide"></div>
       </div>
     </section>
 
     <section class="screen" data-screen="music">
-      <h2 class="screen-title">Música</h2>
+      <nav class="tabbar"><span class="tab static">Ouvindo agora</span></nav>
       <div class="music">
         <div class="now-playing">
-          <div class="disc" id="disc"></div>
-          <h3 id="trackName">—</h3>
-          <p id="trackArtist">Selecione uma faixa</p>
-          <div class="eq" id="eq"></div>
-          <div class="player-controls">
-            <button class="focusable ctrl" data-action="music-prev">⏮</button>
-            <button class="focusable ctrl" data-action="music-toggle" id="musicToggle">▶</button>
-            <button class="focusable ctrl" data-action="music-next">⏭</button>
+          <div class="artwork" id="artwork"><span id="artGlyph">♪</span></div>
+          <h3 id="trackName">Nada tocando</h3>
+          <p id="trackArtist">Escolha uma faixa</p>
+          <div class="mini-scrub"><i id="musicProgress"></i></div>
+          <div class="transport">
+            <button class="focusable round" data-action="music-prev" aria-label="Anterior">⏮</button>
+            <button class="focusable round big" data-action="music-toggle" id="musicToggle" aria-label="Reproduzir">▶</button>
+            <button class="focusable round" data-action="music-next" aria-label="Próxima">⏭</button>
           </div>
         </div>
-        <ol class="tracklist" id="tracklist"></ol>
+        <div class="list" id="tracklist"></div>
       </div>
     </section>
 
     <section class="screen" data-screen="photos">
-      <h2 class="screen-title">Fotos</h2>
-      <div class="photo-grid" id="photoGrid"></div>
+      <nav class="tabbar"><span class="tab static">Fotos</span></nav>
+      <div class="scroller"><div class="photo-grid" id="photoGrid"></div></div>
     </section>
 
     <section class="screen" data-screen="weather">
-      <h2 class="screen-title">Clima</h2>
       <div class="weather" id="weather"></div>
     </section>
 
     <section class="screen" data-screen="search">
-      <h2 class="screen-title">Buscar</h2>
       <div class="search">
-        <div class="search-box" id="searchBox"><span id="searchText"></span><i class="caret"></i></div>
+        <div class="search-field"><span class="mag">⌕</span><span id="searchText"></span><i class="caret"></i></div>
         <div class="keyboard" id="keyboard"></div>
-        <div class="search-results rows" id="searchResults"></div>
+        <div class="scroller search-results" id="searchResults"></div>
       </div>
     </section>
 
     <section class="screen" data-screen="settings">
-      <h2 class="screen-title">Configurações</h2>
-      <div class="settings" id="settings"></div>
+      <div class="settings">
+        <div class="settings-side">
+          <div class="settings-icon" id="settingsIcon">⚙︎</div>
+          <p id="settingsHint">Ajustes</p>
+        </div>
+        <div class="settings-main">
+          <h2>Ajustes</h2>
+          <div class="list" id="settings"></div>
+        </div>
+      </div>
     </section>
   </main>
 
-  <!-- Toast -->
   <div class="toast" id="toast"></div>
+  <footer class="hint">⬆⬇⬅➡ navegar · Enter selecionar · Esc voltar · H início · C Central de Controle</footer>
 
-  <!-- Dica de controle -->
-  <footer class="hint">⬆⬇⬅➡ navegar · <b>Enter</b> selecionar · <b>Esc/Backspace</b> voltar · <b>H</b> início</footer>
-
-  <!-- Protetor de tela -->
-  <div class="screensaver" id="screensaver"><div class="ss-clock" id="ssClock"></div></div>
+  <!-- Protetor de tela "aéreo" -->
+  <div class="screensaver" id="screensaver">
+    <div class="aerial"><i></i><i></i><i></i></div>
+    <div class="ss-clock" id="ssClock"></div>
+    <div class="ss-place">Lençóis Maranhenses<br><small>Maranhão, Brasil</small></div>
+  </div>
 
   <script src="app.js"></script>
 </body>
