@@ -64,14 +64,13 @@ export const TOOLS = [
     description: 'Procura um termo (regex, sem diferenciar maiúsculas) no texto completo da página atual, como um grep. Use quando o snapshot vier truncado.',
     input_schema: obj({ pattern: { type: 'string' } }, ['pattern']),
     async run(ctx, { pattern }) {
-      if (!ctx.browser.lastFullText) await ctx.browser.snapshot({ maxText: 0 });
       let re;
       try {
         re = new RegExp(pattern, 'i');
       } catch (e) {
         throw new Error(`regex inválida: ${e.message}`);
       }
-      const lines = ctx.browser.lastFullText.split('\n').filter((l) => re.test(l)).slice(0, 40);
+      const lines = (await ctx.browser.pageText()).split('\n').filter((l) => re.test(l)).slice(0, 40);
       const id = ctx.ledger.add('find', { url: ctx.browser.url(), pattern, matches: lines.length });
       return `[${id}] find /${pattern}/ -> ${lines.length} linha(s)\n${wrapUntrusted(ctx.browser.url(), lines.join('\n')).text}`;
     },

@@ -74,7 +74,6 @@ function snapshotInPage(maxText) {
     title: document.title,
     interactive: lines,
     text: text.length > maxText ? text.slice(0, maxText) + `\n… [${text.length - maxText} caracteres omitidos; use find]` : text,
-    fullText: text,
   };
 }
 
@@ -126,7 +125,6 @@ export class BrowserSession {
   constructor(browser, page, endpoint) {
     this.browser = browser;
     this.endpoint = endpoint; // usado pelo REA
-    this.lastFullText = '';
     this.contacted = new Set(); // origens que a página atual contatou (só a origem, sem dados)
     this.guard = () => true; // (url) => boolean; o agente liga isto à política
     this.blocked = []; // navegações barradas desde a última leitura
@@ -295,10 +293,12 @@ export class BrowserSession {
   }
 
   async snapshot({ maxText = 4000 } = {}) {
-    const snap = await this.page.evaluate(snapshotInPage, maxText);
-    this.lastFullText = snap.fullText;
-    delete snap.fullText;
-    return snap;
+    return this.page.evaluate(snapshotInPage, maxText);
+  }
+
+  // Texto visível agora, sem remarcar refs (os do último snapshot continuam valendo).
+  async pageText() {
+    return this.page.evaluate(() => (document.body ? document.body.innerText : ''));
   }
 
   async describe(ref) {
