@@ -19,6 +19,10 @@ export function wrapUntrusted(url, body) {
 
 async function observe(ctx, prefix = '') {
   const snap = await ctx.browser.snapshot({ maxText: ctx.maxSnapshotText });
+  for (const b of ctx.browser.takeBlocked()) {
+    ctx.emit({ type: 'navigation_blocked', ...b });
+    prefix += `Navegação bloqueada pela política (${b.via}): ${b.url} está fora do escopo. Se for mesmo necessária, peça com navigate.\n`;
+  }
   const id = ctx.ledger.add('snapshot', { url: snap.url, title: snap.title });
   const body = `Título: ${snap.title}\nURL: ${snap.url}\n\nElementos interativos:\n${snap.interactive.join('\n') || '(nenhum)'}\n\nTexto:\n${snap.text}`;
   const { text, injection } = wrapUntrusted(snap.url, body);

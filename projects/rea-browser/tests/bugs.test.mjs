@@ -64,6 +64,15 @@ test('bug 3b: navegação por JavaScript para fora do escopo é barrada', async 
   assert.ok(!browser.url().startsWith(site.external), `não deveria estar em ${browser.url()}`);
 });
 
+test('bug 3c: com aprovação humana a navegação para outra origem funciona', async () => {
+  const model = new ScriptedModel([
+    () => ({ name: 'navigate', input: { url: site.external + '/landing' } }),
+    end,
+  ]);
+  await run({ task: 'ir', model, approver: async () => true });
+  assert.ok(browser.url().startsWith(site.external), browser.url());
+});
+
 test('bug 4: confirm() é mostrado ao agente e só é aceito com aprovação', async () => {
   let seen = '';
   const model = () => new ScriptedModel([

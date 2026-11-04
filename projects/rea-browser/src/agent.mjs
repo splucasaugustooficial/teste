@@ -64,6 +64,7 @@ export async function runAgent({
   const emit = (e) => onEvent({ t: new Date().toISOString(), ...e });
   const ctx = { browser, policy, ledger, state, emit, maxSnapshotText };
   const tools = toolDefinitions();
+  browser.setNavigationGuard?.((url) => url === 'about:blank' || policy.checkUrl(url).decision === 'allow');
 
   let kickoff = `Missão: ${task}`;
   if (startUrl) {

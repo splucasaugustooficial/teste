@@ -105,7 +105,9 @@ export class BrowserSession {
     });
     const context = await browser.newContext({ locale: 'pt-BR' });
     const page = await context.newPage();
-    return new BrowserSession(browser, page, `http://127.0.0.1:${port}`);
+    const session = new BrowserSession(browser, page, `http://127.0.0.1:${port}`);
+    await context.route('**/*', (route, req) => session.routeNavigation(route, req));
+    return session;
   }
 
   constructor(browser, page, endpoint) {
@@ -113,12 +115,63 @@ export class BrowserSession {
     this.endpoint = endpoint; // usado pelo REA
     this.lastFullText = '';
     this.contacted = new Set(); // origens que a página atual contatou (só a origem, sem dados)
+    this.guard = () => true; // (url) => boolean; o agente liga isto à política
+    this.blocked = []; // navegações barradas desde a última leitura
     this.attach(page);
+  }
+
+  setNavigationGuard(fn) {
+    this.guard = fn;
+  }
+
+  takeBlocked() {
+    return this.blocked.splice(0);
+  }
+
+  // O escopo valia só para as ações que o agente pedia. Esta guarda vale para
+  // qualquer navegação do frame principal, inclusive as que a página dispara
+  // sozinha (location.href, form.submit) e os redirecionamentos.
+  async routeNavigation(route, req) {
+    const frame = req.frame();
+    const isMain = req.isNavigationRequest() && frame === frame.page().mainFrame();
+    if (!isMain) return route.continue();
+    if (!this.guard(req.url())) {
+      this.blocked.push({ url: req.url(), via: 'navegação' });
+      return route.abort('blockedbyclient');
+    }
+    if (req.method() !== 'GET') return route.continue();
+    // Redirecionamentos não passam pelo route: busca sem seguir e decide aqui.
+    let res;
+    try {
+      res = await route.fetch({ maxRedirects: 0 });
+    } catch {
+      return route.continue();
+    }
+    const location = res.status() >= 300 && res.status() < 400 && res.headers().location;
+    if (location) {
+      const next = new URL(location, req.url()).href;
+      if (!this.guard(next)) {
+        this.blocked.push({ url: next, via: `redirecionamento de ${req.url()}` });
+        return route.fulfill({
+          status: 200,
+          contentType: 'text/html; charset=utf-8',
+          body: `<!doctype html><meta charset="utf-8"><title>Navegação bloqueada</title><h1>Navegação bloqueada</h1><p>Redirecionamento para ${next.replace(/[<>&"]/g, '')} fora do escopo.</p>`,
+        });
+      }
+    }
+    return route.fulfill({ response: res });
   }
 
   attach(page) {
     this.page = page;
     this.contacted.clear();
+    // Segunda linha: se algo escapou da guarda (ex.: cadeia de redirecionamentos),
+    // registra e volta.
+    page.on('framenavigated', (frame) => {
+      if (frame !== page.mainFrame() || this.guard(frame.url()) || frame.url() === 'about:blank') return;
+      this.blocked.push({ url: frame.url(), via: 'pós-navegação (voltou)' });
+      page.goBack({ timeout: 5_000 }).catch(() => {});
+    });
     page.on('request', (req) => {
       if (page !== this.page) return;
       if (req.isNavigationRequest() && req.frame() === page.mainFrame()) this.contacted.clear();
@@ -147,7 +200,12 @@ export class BrowserSession {
   }
 
   async goto(url) {
-    const res = await this.page.goto(url, { waitUntil: 'domcontentloaded', timeout: 30_000 });
+    let res = null;
+    try {
+      res = await this.page.goto(url, { waitUntil: 'domcontentloaded', timeout: 30_000 });
+    } catch (e) {
+      if (!/ERR_BLOCKED_BY_CLIENT/.test(e.message)) throw e; // a guarda barrou: vira aviso
+    }
     await this.settle();
     return { status: res ? res.status() : null, url: this.page.url() };
   }
