@@ -8,7 +8,15 @@ const obj = (properties, required = []) => ({ type: 'object', properties, requir
 const REF = { type: 'string', description: 'Ref de um elemento do último snapshot, ex.: "e5".' };
 
 // Conteúdo de página é DADO, nunca instrução. Embrulha e marca suspeitas.
+// Tags que só o harness pode emitir. Se aparecerem no conteúdo da página, são
+// neutralizadas (o "<" vira "‹") para a página não fechar o bloco nem se
+// passar pelo usuário ou pela memória.
+const RESERVED_TAGS = /<(\/?)\s*(untrusted_page_content|user_answer|site_memory)\b/gi;
+const neutralize = (s) => s.replace(RESERVED_TAGS, '‹$1$2');
+
 export function wrapUntrusted(url, body) {
+  body = neutralize(body);
+  url = neutralize(url).replace(/"/g, '%22');
   const hits = detectInjection(body);
   const warn = hits.length
     // Não repete o trecho detectado: isto fica fora do bloco não confiável. O
