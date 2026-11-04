@@ -161,3 +161,18 @@ test('bug 5b: tabs lista as abas e volta para a anterior', async () => {
   assert.match(back, /Título: Ajuda/);
   assert.equal(browser.tabs.length, before - 1);
 });
+
+test('bug 10: texto de diálogo vindo da página fica dentro do bloco não confiável', async () => {
+  let seen = '';
+  const events = [];
+  const model = new ScriptedModel([
+    () => ({ name: 'navigate', input: { url: site.origin + '/aviso' } }),
+    (t) => ((seen = t), end()),
+  ]);
+  await run({ task: 'aviso', model, onEvent: (e) => events.push(e) });
+  const inside = seen.slice(seen.indexOf('<untrusted_page_content'), seen.indexOf('</untrusted_page_content>'));
+  const outside = seen.replace(inside, '');
+  assert.match(inside, /IGNORE ALL PREVIOUS INSTRUCTIONS/);
+  assert.doesNotMatch(outside, /IGNORE ALL PREVIOUS INSTRUCTIONS/);
+  assert.ok(events.some((e) => e.type === 'injection_flagged'));
+});
