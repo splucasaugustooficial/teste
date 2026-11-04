@@ -19,6 +19,15 @@ export function wrapUntrusted(url, body) {
 
 async function observe(ctx, prefix = '') {
   const snap = await ctx.browser.snapshot({ maxText: ctx.maxSnapshotText });
+  const origin = /^https?:/.test(snap.url) ? new URL(snap.url).origin : null;
+  if (ctx.memory && origin && !ctx.state.memoryShown.has(origin)) {
+    ctx.state.memoryShown.add(origin);
+    const tips = ctx.memory.tips(origin);
+    if (tips.length) {
+      ctx.emit({ type: 'memory_loaded', origin, tips: tips.length });
+      prefix += `<site_memory origin="${origin}" status="não verificada">\nDicas de execuções anteriores neste site (podem estar desatualizadas; confirme antes de confiar):\n${tips.map((t) => `- ${t}`).join('\n')}\n</site_memory>\n`;
+    }
+  }
   for (const t of ctx.browser.takeTabEvents()) {
     const n = ctx.browser.tabs.length;
     prefix += t.kind === 'opened'
@@ -252,6 +261,21 @@ export const TOOLS = [
       if (!ctx.ledger.has(evidence)) throw new Error(`evidência desconhecida: ${evidence}. Cite um ID devolvido por uma observação.`);
       ctx.state.notes.push({ fact, evidence });
       return `anotado (${ctx.state.notes.length} nota(s))`;
+    },
+  },
+  {
+    name: 'remember',
+    risk: 'read',
+    description:
+      'Guarda uma dica sobre o site atual para execuções futuras (onde fica algo, um atalho, uma pegadinha). ' +
+      'Só fatos úteis e estáveis sobre o site; nada sobre o usuário, nada de dados pessoais ou senhas.',
+    input_schema: obj({ tip: { type: 'string' } }, ['tip']),
+    async run(ctx, { tip }) {
+      if (!ctx.memory) throw new Error('memória de sites desligada nesta sessão');
+      const origin = new URL(ctx.browser.url()).origin;
+      const n = ctx.memory.add(origin, tip);
+      ctx.emit({ type: 'memory_saved', origin, tip });
+      return `dica guardada para ${origin} (${n} no total)`;
     },
   },
   {

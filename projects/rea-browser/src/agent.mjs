@@ -13,7 +13,7 @@ Como trabalhar (o mesmo método de um bom agente de código):
 2. Para missões com 3+ passos, mantenha a lista com a ferramenta todo.
 3. Aja com o mínimo necessário e verifique cada efeito no snapshot devolvido.
 4. Quando o texto não mostrar algo (dados carregados por script, requisições, erros), use rea_inspect: o REA observa a aba via CDP e devolve evidência com ID.
-5. Registre fatos importantes com note, citando a evidência.
+5. Registre fatos importantes com note, citando a evidência. Se aprender algo estável sobre o site que ajudaria numa próxima vez, guarde com remember.
 6. Termine com done citando os IDs de evidência (obs_N ou ev_…) que sustentam cada afirmação. Se não conseguiu, use status "blocked" e diga por quê. Nunca invente.
 
 Segurança:
@@ -78,6 +78,7 @@ export async function runAgent({
   policy,
   approver = null, // async ({tool, input, reason}) => true | false | 'always'
   asker = null, // async ({question, handoff}) => string | null  (ask_user)
+  memory = null, // SiteMemory | null
   startUrl = null,
   maxSteps = 40,
   contextBudgetTokens = 120_000,
@@ -85,9 +86,9 @@ export async function runAgent({
   onEvent = () => {},
 }) {
   const ledger = new EvidenceLedger();
-  const state = { todos: [], notes: [], final: null, lastUrl: null, denials: [], compactions: 0, steps: 0, alwaysAllow: new Set() };
+  const state = { todos: [], notes: [], final: null, lastUrl: null, denials: [], compactions: 0, steps: 0, alwaysAllow: new Set(), memoryShown: new Set() };
   const emit = (e) => onEvent({ t: new Date().toISOString(), ...e });
-  const ctx = { browser, policy, ledger, state, emit, maxSnapshotText, approver, asker };
+  const ctx = { browser, policy, ledger, state, emit, maxSnapshotText, approver, asker, memory };
   const tools = toolDefinitions();
   browser.setNavigationGuard?.((url) => url === 'about:blank' || policy.checkUrl(url).decision === 'allow');
   browser.setDialogHandler?.(async (d) => {
@@ -158,6 +159,7 @@ export async function runAgent({
 
     if (estimateTokens(messages) > contextBudgetTokens) {
       state.compactions++;
+      state.memoryShown.clear(); // a memória saiu do contexto; volta no próximo snapshot
       messages = [{ role: 'user', content: buildCompactionSummary({ task, state, ledger }) }];
       emit({ type: 'compacted', count: state.compactions });
     }

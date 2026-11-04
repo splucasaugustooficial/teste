@@ -135,3 +135,23 @@ test('diálogos: alert passa, confirm pergunta em default, nega em plan, aceita 
   assert.equal(new Policy({ mode: 'plan' }).checkDialog(d).decision, 'deny');
   assert.equal(new Policy({ mode: 'trust' }).checkDialog(d).decision, 'allow');
 });
+
+test('SiteMemory: deduplica, limita tamanho e separa por origem', async () => {
+  const os = await import('node:os');
+  const path = await import('node:path');
+  const { SiteMemory } = await import('../src/memory.mjs');
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'rea-mem-'));
+  try {
+    const m = new SiteMemory({ dir });
+    m.add('https://a.com', 'busca fica no topo');
+    m.add('https://a.com', 'busca   fica no topo'); // igual após normalizar
+    assert.equal(m.tips('https://a.com').length, 1);
+    assert.equal(m.tips('https://b.com').length, 0);
+    assert.throws(() => m.add('https://a.com', 'x'.repeat(301)), /longa demais/);
+    for (let i = 0; i < 60; i++) m.add('https://a.com', `dica ${i}`);
+    assert.equal(m.tips('https://a.com').length, 50);
+    assert.match(m.tips('https://a.com').at(-1), /^dica 59 \(\d{4}-\d{2}-\d{2}\)$/);
+  } finally {
+    fs.rmSync(dir, { recursive: true, force: true });
+  }
+});

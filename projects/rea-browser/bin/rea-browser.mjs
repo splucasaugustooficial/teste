@@ -2,6 +2,7 @@
 // CLI do REA Browser.
 //   rea-browser "missão" --start-url https://site [--mode default|plan|trust] [--allow-origin URL]...
 //               [--model claude-opus-5-5] [--effort medium] [--max-steps 40] [--headed] [--yes] [--trace arquivo.jsonl]
+//               [--memory-dir DIR | --no-memory]
 //   rea-browser demo [--approve]     # offline, sem chave de API
 import fs from 'node:fs';
 import path from 'node:path';
@@ -11,6 +12,7 @@ import { runAgent } from '../src/agent.mjs';
 import { BrowserSession } from '../src/browser.mjs';
 import { DEMO_TASK, demoPilot } from '../src/demo.mjs';
 import { ClaudeModel } from '../src/models.mjs';
+import { SiteMemory } from '../src/memory.mjs';
 import { MODES, Policy } from '../src/policy.mjs';
 
 const die = (msg) => {
@@ -33,6 +35,8 @@ try {
       yes: { type: 'boolean', default: false },
       approve: { type: 'boolean', default: false },
       trace: { type: 'string' },
+      'memory-dir': { type: 'string' },
+      'no-memory': { type: 'boolean', default: false },
       help: { type: 'boolean', short: 'h', default: false },
     },
   }));
@@ -75,6 +79,8 @@ function show(e) {
     case 'navigation_blocked': return console.log(`${C.red}  ⛔ navegação bloqueada (${e.via}): ${e.url}${C.off}`);
     case 'loop_warning': return console.log(`${C.yellow}  ↺ mesma chamada ${e.repeats}x sem progresso${C.off}`);
     case 'ask_user': return;
+    case 'memory_loaded': return console.log(`${C.dim}  ✎ ${e.tips} dica(s) de memória para ${e.origin}${C.off}`);
+    case 'memory_saved': return console.log(`${C.dim}  ✎ lembrado para ${e.origin}: ${e.tip}${C.off}`);
     case 'tool_result': return console.log(`${C.dim}  ⎿ ${e.ok ? e.preview.split('\n').slice(0, 3).join(' | ') : 'erro: ' + e.error}${C.off}`);
     case 'injection_flagged': return console.log(`${C.red}  ⚠ possível injeção de prompt em ${e.url}: ${e.patterns.join(' | ')}${C.off}`);
     case 'compacted': return console.log(`${C.yellow}  ↻ contexto compactado (#${e.count})${C.off}`);
@@ -124,7 +130,8 @@ try {
     asker = terminalAsker;
   }
   const policy = new Policy({ mode: opt.mode, allowedOrigins: opt['allow-origin'] });
-  const r = await runAgent({ task, model, browser, policy, approver, asker, startUrl, maxSteps: Number(opt['max-steps']), onEvent: show });
+  const memory = opt['no-memory'] || positionals[0] === 'demo' ? null : new SiteMemory(opt['memory-dir'] ? { dir: path.resolve(opt['memory-dir']) } : {});
+  const r = await runAgent({ task, model, browser, policy, approver, asker, memory, startUrl, maxSteps: Number(opt['max-steps']), onEvent: show });
 
   console.log(`\n${r.status === 'completed' ? C.green : C.yellow}■ ${r.status}${C.off}`);
   if (r.answer) console.log(r.answer);
