@@ -296,6 +296,43 @@ export class BrowserSession {
     return this.page.evaluate(snapshotInPage, maxText);
   }
 
+  // Tabelas e listas visíveis como dados (estilo "extract" do Stagehand), sem
+  // remarcar refs. Limites fixos para não inundar o contexto.
+  async extract({ tables = true, lists = true } = {}) {
+    return this.page.evaluate(({ tables, lists }) => {
+      const clean = (s) => (s || '').replace(/\s+/g, ' ').trim().slice(0, 200);
+      const visible = (el) => el.getBoundingClientRect().height > 0;
+      const out = { tables: [], lists: [] };
+      if (tables) {
+        for (const t of [...document.querySelectorAll('table')].filter(visible).slice(0, 5)) {
+          const rows = [...t.querySelectorAll('tr')];
+          const headRow = t.querySelector('thead tr') || (rows[0] && rows[0].querySelector('th') ? rows[0] : null);
+          const headers = headRow ? [...headRow.children].map((c) => clean(c.innerText)) : null;
+          const body = rows.filter((r) => r !== headRow).slice(0, 50).map((r) => [...r.children].map((c) => clean(c.innerText)));
+          out.tables.push({
+            caption: clean(t.caption && t.caption.innerText) || null,
+            headers,
+            rows: headers ? body.map((cells) => Object.fromEntries(headers.map((h, i) => [h || `col${i + 1}`, cells[i] ?? '']))) : body,
+            truncated: rows.length - (headRow ? 1 : 0) > 50,
+          });
+        }
+      }
+      if (lists) {
+        for (const l of [...document.querySelectorAll('ul, ol')].filter(visible)) {
+          if (out.lists.length >= 5) break;
+          if (l.closest('nav')) continue;
+          const items = [...l.children].filter((c) => c.tagName === 'LI').map((li) => clean(li.innerText)).filter(Boolean);
+          if (items.length >= 2) out.lists.push(items.slice(0, 30));
+        }
+      }
+      return out;
+    }, { tables, lists });
+  }
+
+  async waitForText(text, { gone = false, timeoutMs = 10_000 } = {}) {
+    await this.page.getByText(text).first().waitFor({ state: gone ? 'hidden' : 'visible', timeout: timeoutMs });
+  }
+
   // Texto visível agora, sem remarcar refs (os do último snapshot continuam valendo).
   async pageText() {
     return this.page.evaluate(() => (document.body ? document.body.innerText : ''));

@@ -76,6 +76,31 @@ export const TOOLS = [
     },
   },
   {
+    name: 'extract',
+    risk: 'read',
+    description: 'Extrai tabelas (linhas como objetos pelo cabeçalho) e listas da página atual em JSON. Melhor que ler o texto para comparar preços, specs, horários. Devolve um ID de evidência.',
+    input_schema: obj({ what: { type: 'string', enum: ['all', 'tables', 'lists'] } }),
+    async run(ctx, { what = 'all' } = {}) {
+      const data = await ctx.browser.extract({ tables: what !== 'lists', lists: what !== 'tables' });
+      const id = ctx.ledger.add('extract', { url: ctx.browser.url(), tables: data.tables.length, lists: data.lists.length });
+      return `[${id}] extract de ${ctx.browser.url()}: ${data.tables.length} tabela(s), ${data.lists.length} lista(s)\n${wrapUntrusted(ctx.browser.url(), JSON.stringify(data, null, 1)).text}`;
+    },
+  },
+  {
+    name: 'wait_for',
+    risk: 'read',
+    description: 'Espera um texto aparecer (ou sumir, com gone=true) na página, até timeout_ms (padrão 10000, máx. 30000), e devolve o snapshot. Use em vez de reler a página repetidamente.',
+    input_schema: obj({ text: { type: 'string' }, gone: { type: 'boolean' }, timeout_ms: { type: 'integer', minimum: 100, maximum: 30000 } }, ['text']),
+    async run(ctx, { text, gone = false, timeout_ms = 10_000 }) {
+      try {
+        await ctx.browser.waitForText(text, { gone, timeoutMs: Math.min(timeout_ms, 30_000) });
+      } catch {
+        throw new Error(`o texto ${JSON.stringify(text)} não ${gone ? 'sumiu' : 'apareceu'} em ${timeout_ms} ms`);
+      }
+      return observe(ctx, `${JSON.stringify(text)} ${gone ? 'sumiu' : 'apareceu'}\n`);
+    },
+  },
+  {
     name: 'click',
     risk: 'act',
     description: 'Clica num elemento pelo ref e devolve o novo snapshot (verifique o efeito nele).',

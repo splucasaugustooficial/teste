@@ -110,6 +110,15 @@ carregar(); setInterval(carregar, 300);
       return send(200, page('Entrar', `<h1>Entrar</h1><form action="/login" method="post">
 <label>E-mail <input name="email" type="email"></label><label>Senha <input name="senha" type="password"></label><button>Entrar</button></form>`));
     }
+    if (url.pathname === '/comparar') {
+      return send(200, page('Comparar', `<h1>Comparar</h1><table><thead><tr><th>Produto</th><th>Preço</th><th>Estoque</th></tr></thead><tbody>${produtos
+        .map((p) => `<tr><td>${p.nome}</td><td>${p.preco}</td><td>${p.estoque}</td></tr>`).join('')}</tbody></table>
+<h2>Vantagens</h2><ul><li>Frete grátis acima de R$ 299</li><li>Troca em 30 dias</li></ul>`));
+    }
+    if (url.pathname === '/relampago') {
+      return send(200, page('Relâmpago', `<h1>Oferta relâmpago</h1><p id="o">Carregando…</p>
+<script>setTimeout(()=>{document.getElementById('o').textContent='Cupom liberado: RAIO20'},1500)</script>`));
+    }
     if (url.pathname === '/frete') {
       return send(200, page('Frete', `<h1>Frete</h1><p id="frete">Calculando…</p>
 <script>setInterval(async()=>{const j=await (await fetch('${ext.origin}/api/frete')).json();
