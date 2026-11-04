@@ -31,6 +31,26 @@ Protocol e devolve *Evidence* com ID, nível de confiança e limitações declar
 | Compactação de contexto | histórico só cresce por anexação; ao passar do orçamento, recomeça de um resumo com missão, tarefas, notas e páginas |
 | "Relate com fidelidade; verifique antes de dizer que terminou" | `done` exige IDs de evidência que existam no ledger; senão é recusado e o loop continua |
 | Subagente de pesquisa / ferramenta de análise | `rea_inspect`: acessibilidade, rede (com formato das respostas JSON, sem valores) e console |
+| `AskUserQuestion` | `ask_user`: pergunta ao humano ou entrega a janela (`handoff`) para login/CAPTCHA |
+| "Sim, e não pergunte de novo" | aprovar com `[a] sempre` vale pela sessão (exceto senha/cartão) |
+| `CLAUDE.md` / memória | memória por site: `remember` grava dicas por origem, recebidas na próxima visita |
+| Detecção de loop do harness | mesma chamada + mesmo resultado: aviso na 3ª vez, status `loop` na 5ª |
+
+## O melhor de outros agentes
+
+| Inspiração | Aqui |
+|---|---|
+| **Operator / Comet**: confirmar antes do que não tem volta; "assumir o controle" | portão de permissões + `ask_user` com `handoff` |
+| **Stagehand**: `extract`; cache de ações | `extract` (tabelas como objetos pelo cabeçalho, listas); **gravar e repetir** sem modelo |
+| **Browser Use**: elementos indexados; abas; workflows | refs `e1…` por snapshot; `tabs` e abas novas seguidas; receitas com alvo semântico |
+| **Playwright**: auto-wait | `wait_for` (texto aparece/some) |
+| **Claude Code**: permissões, verificação, memória | modos, `done` com evidência, memória por site |
+| **REA**: evidência com ID, confiança e limitações | toda observação de rede/acessibilidade é citável (`ev_…`) |
+
+O que o distingue: **percepção por evidência** (o REA vê de onde vêm os dados, não
+só o que está desenhado), **conclusão só com prova** (`done` recusa IDs que não
+existem) e **receitas que repetem pelo mesmo portão**: uma compra gravada pede
+aprovação de novo na repetição.
 
 ## O que o REA acrescenta
 
@@ -71,7 +91,8 @@ cd projects/rea-browser
 npm install
 
 npm run demo                  # offline, sem chave: loja local + piloto roteirizado
-node bin/rea-browser.mjs demo --approve   # a mesma demo, aprovando a compra
+node bin/rea-browser.mjs demo --approve --record receita.json   # aprova a compra e grava
+node bin/rea-browser.mjs replay receita.json --demo-site --approve   # repete sem modelo
 
 export ANTHROPIC_API_KEY=...  # ou `ant auth login`
 node bin/rea-browser.mjs "Qual o frete do produto mais barato?" \
@@ -86,7 +107,14 @@ node bin/rea-browser.mjs "Qual o frete do produto mais barato?" \
 | `--yes` | aprova tudo que perguntaria (use só em sites de teste) |
 | `--model`, `--effort` | padrão `claude-opus-5-5`, `medium` |
 | `--trace arquivo.jsonl` | grava cada evento (chamada, decisão, resultado) |
-| `--headed` | mostra a janela do navegador |
+| `--headed` | mostra a janela do navegador (necessário para `ask_user` com `handoff`) |
+| `--record arquivo.json` | grava as ações de página da execução como receita |
+| `replay arquivo.json` | repete a receita sem modelo; `--start-url` troca a origem (ex.: homologação → produção) |
+| `--memory-dir DIR` / `--no-memory` | onde fica a memória por site (padrão `~/.rea-browser/memory`) / desliga |
+
+Ferramentas do agente: `navigate`, `snapshot`, `find`, `extract`, `wait_for`,
+`click`, `type`, `select`, `scroll`, `back`, `tabs`, `rea_inspect`,
+`webmcp_discover`, `screenshot`, `ask_user`, `todo`, `note`, `remember`, `done`.
 
 O portão, resumido:
 
@@ -94,6 +122,8 @@ O portão, resumido:
 - **pergunta em `default`:** cliques/envios que parecem irreversíveis (comprar, finalizar, pagar, excluir, transferir…) e navegação/formulários para outra origem;
 - **pergunta em qualquer modo:** digitar em campos de senha, cartão, CPF, OTP;
 - **sempre negado:** esquemas que não sejam `http(s)` (`javascript:`, `file:`…); em `plan`, qualquer ação.
+- **guarda de navegação:** além das ações pedidas, toda navegação do frame principal (redirecionamento 302, `location.href`, envio por Enter) é checada contra o escopo;
+- **diálogos:** `alert` passa; `confirm`/`prompt` negam em `plan`, perguntam em `default`, aceitam em `trust`; o modelo sempre vê o texto e o desfecho.
 
 Sem humano disponível (stdin não interativo, ou a demo sem `--approve`), "pergunta" vira "nega".
 
@@ -103,18 +133,36 @@ Sem humano disponível (stdin não interativo, ou a demo sem `--approve`), "perg
 npm test
 ```
 
-19 testes (`node:test`): 10 unitários (política, detector de injeção, validação
-de entrada, resumo do REA, compactação, formato da requisição ao Claude) e 9 de
-ponta a ponta com **Chromium real + REA real** contra a loja local
-(`tests/fixture-site.mjs`). Os de ponta a ponta usam um piloto roteirizado no
-lugar do modelo, então rodam sem chave de API. Eles verificam, entre outros:
+45 testes (`node:test`, cerca de 1 minuto): 15 unitários e 30 com **Chromium
+real + REA real** contra uma loja local com duas origens
+(`tests/fixture-site.mjs`). Os de navegador usam um piloto roteirizado no lugar
+do modelo, então rodam sem chave de API.
 
-- o REA encontra `/api/estoque/1`, que não está no HTML;
-- sem aprovação, a compra não acontece (`pedidos.length === 0`); com aprovação, acontece;
-- a página com injeção é marcada e a navegação para `evil.example` é negada;
-- a senha nunca chega ao campo, nem em `trust`;
-- `done` sem evidência, ou com ID inventado, é recusado e o loop segue;
-- a compactação recomeça do resumo e a missão termina.
+- `e2e.test.mjs` (9): o REA acha `/api/estoque/1`, que não está no HTML; sem
+  aprovação a compra não acontece, com aprovação acontece; injeção marcada;
+  senha nunca digitada, nem em `trust`; `done` sem evidência é recusado;
+  compactação.
+- `bugs.test.mjs` (13): uma regressão por bug corrigido (abaixo).
+- `features.test.mjs` (8): `extract`, `wait_for`, `ask_user`, aprovação
+  "sempre", memória por site, gravar e repetir (inclusive em outro servidor e
+  parando sem aprovação).
+
+### Bugs corrigidos (cada um com teste que falhava antes)
+
+| # | Bug | Correção |
+|---|---|---|
+| 1 | `rea_inspect` descartava em silêncio APIs de outras origens; várias origens quebravam a chamada ao REA | aprova as origens que a página contatou, com a flag repetida |
+| 2 | Enter num campo de texto enviava formulário para outra origem sem pedir | `type` com `submit` conta como envio |
+| 3 | redirecionamento 302 e `location.href` saíam do escopo por fora do portão | guarda em toda navegação do frame principal |
+| 4 | `confirm()` era recusado em silêncio pelo Playwright | diálogo passa pela política e aparece para o modelo |
+| 5 | link `target=_blank` abria aba invisível ao agente | abas novas são seguidas; ferramenta `tabs` |
+| 6 | captura de tela inflava a estimativa de tokens (~25 mil por imagem) | imagem conta valor fixo |
+| 7 | `find` lia texto do snapshot antigo | lê a página na hora |
+| 8 | modelo repetindo chamada negada gastava todos os passos | detecção de loop |
+| 9 | CLI aceitava `--max-steps abc`, mostrava stack trace | validação com mensagem clara |
+| 10 | texto de `alert()` da página ficava fora do bloco não confiável | entra em "Eventos da página", dentro do bloco |
+| 11 | página podia escrever `</untrusted_page_content>` e "sair" do bloco | tags reservadas neutralizadas |
+| 12 | a guarda do #3 travava abas novas (`req.frame()` lança) | navegação sem frame = frame principal da aba nova |
 
 ## Limitações (honestas)
 
@@ -130,5 +178,15 @@ lugar do modelo, então rodam sem chave de API. Eles verificam, entre outros:
   medido, veja [`../injection-guard`](../injection-guard/).
 - O REA só vê a rede **durante** a janela de observação (`observation_ms`);
   requisições anteriores ao attach não aparecem — ele mesmo declara isso.
-- Uma aba, sem abas paralelas nem subagentes; ações são sequenciais.
-- A estimativa de tokens para compactar é `caracteres / 4`, não uma contagem real.
+- Ações são sequenciais: várias abas, mas uma ativa por vez, sem subagentes paralelos.
+- A estimativa de tokens para compactar é `caracteres / 4` (imagens com valor
+  fixo), não uma contagem real.
+- Guarda de navegação: redirecionamentos de GET são decididos antes de sair; num
+  POST que redireciona para fora, ou numa cadeia de redirecionamentos, a
+  requisição externa já foi feita quando a guarda percebe, e ela só volta a página.
+- Repetição de receita acha elementos por papel + rótulo; se o site renomear o
+  botão para algo sem relação, a repetição para com "não achei …" em vez de
+  chutar.
+- Memória por site é texto gravado pelo próprio agente a partir de páginas: chega
+  marcada como não verificada e dicas com padrão de injeção são recusadas, mas o
+  filtro é por regex.

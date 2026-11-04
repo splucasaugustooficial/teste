@@ -10,7 +10,7 @@ reproducible benchmark, published numbers, and stated limits.
 | [**ragbench**](ragbench/) | Which chunking and retriever should I use? | Recall@k flatters big chunks; at equal context budget the gap disappears, while splitting evidence costs 30% of answers |
 | [**injection-guard**](injection-guard/) | Is this input or document trying to hijack my agent? | F1 0.955 in-distribution vs 0.571 on unseen phrasings: detectors look stronger than they are |
 | [**dataset-doctor**](dataset-doctor/) | Is my fine-tuning data clean and my test set uncontaminated? | Finds exactly the planted issues, zero false alarms on decoys |
-| [**rea-browser**](rea-browser/) | Can an agent browse the web the way a coding agent works on a repo? | Read → act → verify loop with a permission gate and REA (CDP) evidence; `done` is refused without evidence IDs. Node + Playwright, not stdlib |
+| [**rea-browser**](rea-browser/) | Can an agent browse the web the way a coding agent works on a repo? | Read → act → verify loop with a permission gate, navigation guard and REA (CDP) evidence; `done` is refused without evidence IDs; record/replay runs without a model. 45 tests, 12 bugs fixed with regressions. Node + Playwright, not stdlib |
 
 The first four run on Python 3.9+ with the standard library, offline (CI: `.github/workflows/projects.yml`). `rea-browser` is Node 22 with Playwright and REA (CI: `.github/workflows/rea-browser.yml`; `cd projects/rea-browser && npm ci && npm test`).
 
