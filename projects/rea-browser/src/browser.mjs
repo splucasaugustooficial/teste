@@ -96,6 +96,18 @@ function describeInPage(ref) {
   };
 }
 
+// req.frame() lança na navegação de uma aba recém-aberta (o frame ainda não
+// existe); uma navegação sem frame só pode ser o frame principal dessa aba.
+function isMainNavigation(req) {
+  if (!req.isNavigationRequest()) return false;
+  try {
+    const frame = req.frame();
+    return frame === frame.page().mainFrame();
+  } catch {
+    return true;
+  }
+}
+
 export class BrowserSession {
   static async launch({ headless = true } = {}) {
     const port = await freePort();
@@ -107,6 +119,7 @@ export class BrowserSession {
     const page = await context.newPage();
     const session = new BrowserSession(browser, page, `http://127.0.0.1:${port}`);
     await context.route('**/*', (route, req) => session.routeNavigation(route, req));
+    context.on('page', (p) => session.onNewPage(p));
     return session;
   }
 
@@ -121,7 +134,45 @@ export class BrowserSession {
     // Sem handler, o Playwright recusa todo confirm() em silêncio. Padrão aqui:
     // alert é aceito (só informa), o resto é recusado — e tudo fica registrado.
     this.dialogHandler = async (d) => d.type === 'alert';
-    this.attach(page);
+    this.tabs = [];
+    this.tabEvents = []; // abas abertas/fechadas desde a última leitura
+    this.wire(page);
+    this.activate(page);
+  }
+
+  // Abas novas (target=_blank, window.open) viram a aba ativa: é para lá que o
+  // usuário olharia. A antiga continua acessível pela ferramenta tabs.
+  onNewPage(page) {
+    if (this.tabs.includes(page)) return;
+    this.wire(page);
+    this.activate(page);
+    this.tabEvents.push({ kind: 'opened', index: this.tabs.indexOf(page) });
+  }
+
+  takeTabEvents() {
+    return this.tabEvents.splice(0);
+  }
+
+  listTabs() {
+    return this.tabs.map((p, i) => ({ index: i, url: p.url(), active: p === this.page }));
+  }
+
+  async tabTitles() {
+    return Promise.all(this.listTabs().map(async (t) => ({ ...t, title: await this.tabs[t.index].title().catch(() => '') })));
+  }
+
+  async switchTab(index) {
+    const page = this.tabs[index];
+    if (!page) throw new Error(`aba ${index} não existe (há ${this.tabs.length})`);
+    this.activate(page);
+    await page.bringToFront();
+  }
+
+  async closeTab(index) {
+    const page = this.tabs[index];
+    if (!page) throw new Error(`aba ${index} não existe (há ${this.tabs.length})`);
+    if (this.tabs.length === 1) throw new Error('não dá para fechar a única aba');
+    await page.close();
   }
 
   setDialogHandler(fn) {
@@ -156,9 +207,7 @@ export class BrowserSession {
   // qualquer navegação do frame principal, inclusive as que a página dispara
   // sozinha (location.href, form.submit) e os redirecionamentos.
   async routeNavigation(route, req) {
-    const frame = req.frame();
-    const isMain = req.isNavigationRequest() && frame === frame.page().mainFrame();
-    if (!isMain) return route.continue();
+    if (!isMainNavigation(req)) return route.continue();
     if (!this.guard(req.url())) {
       this.blocked.push({ url: req.url(), via: 'navegação' });
       return route.abort('blockedbyclient');
@@ -186,9 +235,19 @@ export class BrowserSession {
     return route.fulfill({ response: res });
   }
 
-  attach(page) {
+  activate(page) {
     this.page = page;
     this.contacted.clear();
+  }
+
+  // Listeners uma vez por aba; os de estado só agem se a aba for a ativa.
+  wire(page) {
+    this.tabs.push(page);
+    page.on('close', () => {
+      this.tabs = this.tabs.filter((p) => p !== page);
+      this.tabEvents.push({ kind: 'closed' });
+      if (this.page === page && this.tabs.length) this.activate(this.tabs[this.tabs.length - 1]);
+    });
     page.on('dialog', (d) => this.onDialog(d));
     // Segunda linha: se algo escapou da guarda (ex.: cadeia de redirecionamentos),
     // registra e volta.
@@ -199,7 +258,7 @@ export class BrowserSession {
     });
     page.on('request', (req) => {
       if (page !== this.page) return;
-      if (req.isNavigationRequest() && req.frame() === page.mainFrame()) this.contacted.clear();
+      if (isMainNavigation(req)) this.contacted.clear();
       try {
         const u = new URL(req.url());
         if (u.protocol === 'http:' || u.protocol === 'https:') this.contacted.add(u.origin);
@@ -252,7 +311,12 @@ export class BrowserSession {
   }
 
   async click(ref) {
+    const ctx = this.page.context();
+    const opensTab = await this.locator(ref).evaluate((el) => (el.closest('a,form')?.getAttribute('target') || '') === '_blank').catch(() => false);
+    const newPage = opensTab ? ctx.waitForEvent('page', { timeout: 5_000 }).catch(() => null) : null;
     await this.locator(ref).click({ timeout: 10_000 });
+    const opened = await newPage;
+    if (opened) await opened.waitForLoadState('domcontentloaded', { timeout: 10_000 }).catch(() => {});
     await this.settle();
   }
 

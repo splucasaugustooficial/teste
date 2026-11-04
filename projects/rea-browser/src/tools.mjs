@@ -19,6 +19,12 @@ export function wrapUntrusted(url, body) {
 
 async function observe(ctx, prefix = '') {
   const snap = await ctx.browser.snapshot({ maxText: ctx.maxSnapshotText });
+  for (const t of ctx.browser.takeTabEvents()) {
+    const n = ctx.browser.tabs.length;
+    prefix += t.kind === 'opened'
+      ? `Uma nova aba foi aberta e agora é a ativa (aba ${t.index} de ${n}). Use tabs para voltar à anterior.\n`
+      : `Uma aba foi fechada; restam ${n}.\n`;
+  }
   for (const d of ctx.browser.takeDialogs()) {
     prefix += `A página abriu um diálogo ${d.type}: ${JSON.stringify(d.message)} -> ${d.accepted ? 'aceito' : 'recusado'}.\n`;
   }
@@ -118,6 +124,23 @@ export const TOOLS = [
     async run(ctx) {
       await ctx.browser.back();
       return observe(ctx);
+    },
+  },
+  {
+    name: 'tabs',
+    risk: 'read',
+    description: 'Gerencia as abas: list mostra todas; switch ativa a aba de índice index; close fecha a aba index. Links com target=_blank abrem aba nova automaticamente.',
+    input_schema: obj({ action: { type: 'string', enum: ['list', 'switch', 'close'] }, index: { type: 'integer', minimum: 0 } }, ['action']),
+    async run(ctx, { action, index }) {
+      if (action !== 'list' && index === undefined) throw new Error(`tabs ${action} precisa de index`);
+      if (action === 'switch') {
+        await ctx.browser.switchTab(index);
+        return observe(ctx, `aba ${index} ativada\n`);
+      }
+      if (action === 'close') await ctx.browser.closeTab(index);
+      const tabs = await ctx.browser.tabTitles();
+      ctx.browser.takeTabEvents(); // já relatado nesta lista
+      return tabs.map((t) => `${t.active ? '*' : ' '} [${t.index}] ${t.title} <${t.url}>`).join('\n');
     },
   },
   {

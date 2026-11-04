@@ -143,3 +143,19 @@ test('bug 9: CLI rejeita --max-steps e --mode inválidos com mensagem clara', ()
     assert.doesNotMatch(p.stderr, /at .*\.mjs:\d+/, 'sem stack trace');
   }
 });
+
+test('bug 5b: tabs lista as abas e volta para a anterior', async () => {
+  let listed = '', back = '', before = 0;
+  const model = new ScriptedModel([
+    () => ({ name: 'navigate', input: { url: site.origin + '/ajuda' } }),
+    (t) => ({ name: 'click', input: { ref: refFor(t, 'nova aba') } }),
+    () => ({ name: 'tabs', input: { action: 'list' } }),
+    (t) => ((listed = t), { name: 'tabs', input: { action: 'switch', index: 0 } }),
+    (t) => ((back = t), (before = browser.tabs.length), { name: 'tabs', input: { action: 'close', index: before - 1 } }),
+    end,
+  ]);
+  await run({ task: 'abas', model });
+  assert.match(listed, /\* \[\d+\] Produtos/);
+  assert.match(back, /Título: Ajuda/);
+  assert.equal(browser.tabs.length, before - 1);
+});
