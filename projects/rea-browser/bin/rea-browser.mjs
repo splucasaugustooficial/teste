@@ -11,24 +11,46 @@ import { runAgent } from '../src/agent.mjs';
 import { BrowserSession } from '../src/browser.mjs';
 import { DEMO_TASK, demoPilot } from '../src/demo.mjs';
 import { ClaudeModel } from '../src/models.mjs';
-import { Policy } from '../src/policy.mjs';
+import { MODES, Policy } from '../src/policy.mjs';
 
-const { values: opt, positionals } = parseArgs({
-  allowPositionals: true,
-  options: {
-    'start-url': { type: 'string' },
-    mode: { type: 'string', default: 'default' },
-    'allow-origin': { type: 'string', multiple: true, default: [] },
-    model: { type: 'string', default: 'claude-opus-5-5' },
-    effort: { type: 'string', default: 'medium' },
-    'max-steps': { type: 'string', default: '40' },
-    headed: { type: 'boolean', default: false },
-    yes: { type: 'boolean', default: false },
-    approve: { type: 'boolean', default: false },
-    trace: { type: 'string' },
-    help: { type: 'boolean', short: 'h', default: false },
-  },
-});
+const die = (msg) => {
+  console.error(`rea-browser: ${msg}`);
+  process.exit(1);
+};
+
+let opt, positionals;
+try {
+  ({ values: opt, positionals } = parseArgs({
+    allowPositionals: true,
+    options: {
+      'start-url': { type: 'string' },
+      mode: { type: 'string', default: 'default' },
+      'allow-origin': { type: 'string', multiple: true, default: [] },
+      model: { type: 'string', default: 'claude-opus-5-5' },
+      effort: { type: 'string', default: 'medium' },
+      'max-steps': { type: 'string', default: '40' },
+      headed: { type: 'boolean', default: false },
+      yes: { type: 'boolean', default: false },
+      approve: { type: 'boolean', default: false },
+      trace: { type: 'string' },
+      help: { type: 'boolean', short: 'h', default: false },
+    },
+  }));
+} catch (e) {
+  die(`argumento inválido: ${e.message}`);
+}
+
+const EFFORTS = ['low', 'medium', 'high', 'xhigh', 'max'];
+if (!MODES.includes(opt.mode)) die(`--mode inválido: ${opt.mode} (use ${MODES.join(', ')})`);
+if (!EFFORTS.includes(opt.effort)) die(`--effort inválido: ${opt.effort} (use ${EFFORTS.join(', ')})`);
+if (!/^[1-9]\d*$/.test(opt['max-steps'])) die(`--max-steps inválido: ${opt['max-steps']} (use um inteiro positivo)`);
+for (const o of [...opt['allow-origin'], ...(opt['start-url'] ? [opt['start-url']] : [])]) {
+  try {
+    new URL(o);
+  } catch {
+    die(`URL inválida: ${o}`);
+  }
+}
 
 if (opt.help || positionals.length === 0) {
   console.log(fs.readFileSync(new URL(import.meta.url), 'utf8').split('\n').slice(1, 6).map((l) => l.replace(/^\/\/ ?/, '')).join('\n'));
