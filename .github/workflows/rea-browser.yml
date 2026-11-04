@@ -1,0 +1,25 @@
+name: rea-browser
+
+on:
+  push:
+    paths: ["projects/rea-browser/**", ".github/workflows/rea-browser.yml"]
+  pull_request:
+    paths: ["projects/rea-browser/**", ".github/workflows/rea-browser.yml"]
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: projects/rea-browser
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22.23.4"
+      - run: npm ci
+      - run: npx playwright install --with-deps chromium
+      - run: npm test
