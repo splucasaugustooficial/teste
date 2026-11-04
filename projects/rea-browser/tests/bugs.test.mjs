@@ -130,8 +130,10 @@ test('bug 8: a mesma chamada repetida sem progresso encerra com status loop', as
     () => ({ name: 'navigate', input: { url: site.origin + '/carrinho' } }),
     (t) => ({ name: 'click', input: { ref: (ref ??= refFor(t, 'Finalizar compra')) } }), // repete para sempre
   ]);
-  const r = await run({ task: 'comprar', model, maxSteps: 30 });
+  const events = [];
+  const r = await run({ task: 'comprar', model, maxSteps: 30, onEvent: (e) => events.push(e) });
   assert.equal(r.status, 'loop');
+  assert.ok(events.some((e) => e.type === 'loop_warning'), 'o modelo deveria ser avisado antes de encerrar');
   assert.ok(r.state.steps < 10, `gastou ${r.state.steps} passos`);
 });
 

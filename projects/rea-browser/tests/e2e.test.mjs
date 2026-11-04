@@ -113,9 +113,11 @@ test('compactação recomeça do resumo e mantém a missão andando', async () =
   const model = new ScriptedModel([
     () => ({ name: 'navigate', input: { url: site.origin + '/produtos' } }),
     () => ({ name: 'note', input: { fact: 'há 3 produtos', evidence: 'obs_1' } }),
-    // Último passo se repete: relê a página até a compactação acontecer.
+    // Último passo se repete: visita páginas diferentes até a compactação acontecer
+    // (reler a mesma página sem mudança seria detectado como loop).
     (t, msgs) => {
-      if (msgs.length > 1) return { name: 'snapshot', input: {} };
+      const pages = ['/', '/produtos', '/carrinho', '/promo'];
+      if (msgs.length > 1) return { name: 'navigate', input: { url: site.origin + pages[msgs.length % pages.length] } };
       sawSummary = /compactado/.test(msgs[0].content) && /há 3 produtos \(obs_1\)/.test(msgs[0].content);
       return { name: 'done', input: { status: 'completed', answer: '3 produtos', evidence: ['obs_1'] } };
     },

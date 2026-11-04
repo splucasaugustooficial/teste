@@ -38,6 +38,15 @@ export function estimateTokens(messages) {
   return Math.ceil(text.length / 4) + images * IMAGE_TOKENS;
 }
 
+const LOOP_WARN = 2;
+const LOOP_ABORT = 4;
+
+// IDs de evidência mudam a cada chamada; o resto do resultado diz se houve progresso.
+function stepSignature(uses, results) {
+  const text = (c) => (typeof c === 'string' ? c : Array.isArray(c) ? c.filter((b) => b.type === 'text').map((b) => b.text).join('\n') : '');
+  return JSON.stringify(uses.map((u, i) => [u.name, u.input, text(results[i].content).replace(/obs_\d+|ev_[0-9a-f]+/g, '#')]));
+}
+
 export function buildCompactionSummary({ task, state, ledger }) {
   const todos = state.todos.map((t) => `- [${t.status}] ${t.content}`).join('\n') || '(nenhuma)';
   const notes = state.notes.map((n) => `- ${n.fact} (${n.evidence})`).join('\n') || '(nenhuma)';
@@ -98,6 +107,8 @@ export async function runAgent({
   emit({ type: 'start', task, mode: policy.mode, scope: [...policy.allowedOrigins] });
 
   let nudged = false;
+  let lastSig = null;
+  let stalls = 0;
   for (; state.steps < maxSteps; state.steps++) {
     const res = await model.next({ system: SYSTEM_PROMPT, tools, messages });
     messages.push({ role: 'assistant', content: res.content });
@@ -121,7 +132,22 @@ export async function runAgent({
     // Ações no navegador são sequenciais: a ordem importa e a página é uma só.
     const results = [];
     for (const use of uses) results.push(await executeTool(ctx, use, approver));
-    messages.push({ role: 'user', content: results });
+
+    // Mesma chamada + mesmo resultado = nenhum progresso. Avisa na 3ª vez e
+    // encerra na 5ª, em vez de queimar todos os passos.
+    const sig = stepSignature(uses, results);
+    stalls = sig === lastSig ? stalls + 1 : 0;
+    lastSig = sig;
+    if (stalls >= LOOP_ABORT) {
+      messages.push({ role: 'user', content: results });
+      emit({ type: 'end', status: 'loop' });
+      return { status: 'loop', answer: null, evidence: [], state, ledger };
+    }
+    const content = stalls >= LOOP_WARN
+      ? [...results, { type: 'text', text: `Aviso do sistema: você repetiu a mesma chamada ${stalls + 1} vezes seguidas com o mesmo resultado. Mude de abordagem ou encerre com done (status "blocked").` }]
+      : results;
+    if (stalls >= LOOP_WARN) emit({ type: 'loop_warning', repeats: stalls + 1 });
+    messages.push({ role: 'user', content });
 
     if (state.final) {
       emit({ type: 'end', status: state.final.status, answer: state.final.answer, evidence: state.final.evidence });
