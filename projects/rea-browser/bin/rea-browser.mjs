@@ -3,7 +3,10 @@
 //   rea-browser "missão" --start-url https://site [--mode default|plan|trust] [--allow-origin URL]...
 //               [--model claude-opus-5-5] [--effort medium] [--max-steps 40] [--headed] [--yes] [--trace arquivo.jsonl]
 //               [--memory-dir DIR | --no-memory]
-//   rea-browser demo [--approve]     # offline, sem chave de API
+//               [--record receita.json]
+//   rea-browser replay receita.json [--start-url URL] [--mode ...] [--yes]   # repete sem modelo
+//   rea-browser demo [--approve] [--record receita.json]                     # offline, sem chave de API
+//   rea-browser replay receita.json --demo-site [--approve]                  # repete a demo offline
 import fs from 'node:fs';
 import path from 'node:path';
 import readline from 'node:readline/promises';
@@ -13,6 +16,7 @@ import { BrowserSession } from '../src/browser.mjs';
 import { DEMO_TASK, demoPilot } from '../src/demo.mjs';
 import { ClaudeModel } from '../src/models.mjs';
 import { SiteMemory } from '../src/memory.mjs';
+import { Recorder, ReplayModel } from '../src/replay.mjs';
 import { MODES, Policy } from '../src/policy.mjs';
 
 const die = (msg) => {
@@ -37,6 +41,8 @@ try {
       trace: { type: 'string' },
       'memory-dir': { type: 'string' },
       'no-memory': { type: 'boolean', default: false },
+      record: { type: 'string' },
+      'demo-site': { type: 'boolean', default: false },
       help: { type: 'boolean', short: 'h', default: false },
     },
   }));
@@ -56,8 +62,19 @@ for (const o of [...opt['allow-origin'], ...(opt['start-url'] ? [opt['start-url'
   }
 }
 
+let recording = null;
+if (positionals[0] === 'replay') {
+  if (!positionals[1]) die('uso: rea-browser replay receita.json');
+  try {
+    recording = JSON.parse(fs.readFileSync(positionals[1], 'utf8'));
+  } catch (e) {
+    die(`não consegui ler a receita ${positionals[1]}: ${e.message}`);
+  }
+  if (recording?.version !== 1 || !Array.isArray(recording.steps)) die(`receita inválida: ${positionals[1]} (esperado version 1 com steps)`);
+}
+
 if (opt.help || positionals.length === 0) {
-  console.log(fs.readFileSync(new URL(import.meta.url), 'utf8').split('\n').slice(1, 6).map((l) => l.replace(/^\/\/ ?/, '')).join('\n'));
+  console.log(fs.readFileSync(new URL(import.meta.url), 'utf8').split('\n').slice(1, 10).map((l) => l.replace(/^\/\/ ?/, '')).join('\n'));
   process.exit(positionals.length === 0 && !opt.help ? 1 : 0);
 }
 
@@ -115,13 +132,24 @@ let site = null;
 const browser = await BrowserSession.launch({ headless: !opt.headed });
 try {
   let task, model, startUrl, approver, asker = null;
+  const demoApprover = opt.approve || opt.yes ? async () => true : null;
   if (positionals[0] === 'demo') {
     const { startFixtureSite } = await import('../tests/fixture-site.mjs');
     site = await startFixtureSite();
     task = DEMO_TASK;
     model = demoPilot();
     startUrl = site.origin;
-    approver = opt.approve ? async () => true : null;
+    approver = demoApprover;
+  } else if (recording) {
+    if (opt['demo-site']) {
+      const { startFixtureSite } = await import('../tests/fixture-site.mjs');
+      site = await startFixtureSite();
+    }
+    task = `repetir: ${recording.task || positionals[1]}`;
+    startUrl = site?.origin || opt['start-url'] || recording.startUrl;
+    approver = site ? demoApprover : terminalApprover;
+    asker = site ? null : terminalAsker;
+    model = new ReplayModel(recording, { startUrl, asker });
   } else {
     task = positionals.join(' ');
     startUrl = opt['start-url'] || null;
@@ -130,8 +158,9 @@ try {
     asker = terminalAsker;
   }
   const policy = new Policy({ mode: opt.mode, allowedOrigins: opt['allow-origin'] });
-  const memory = opt['no-memory'] || positionals[0] === 'demo' ? null : new SiteMemory(opt['memory-dir'] ? { dir: path.resolve(opt['memory-dir']) } : {});
-  const r = await runAgent({ task, model, browser, policy, approver, asker, memory, startUrl, maxSteps: Number(opt['max-steps']), onEvent: show });
+  const recorder = opt.record ? new Recorder({ task, startUrl }) : null;
+  const memory = opt['no-memory'] || positionals[0] === 'demo' || recording ? null : new SiteMemory(opt['memory-dir'] ? { dir: path.resolve(opt['memory-dir']) } : {});
+  const r = await runAgent({ task, model, browser, policy, approver, asker, memory, recorder, startUrl, maxSteps: Number(opt['max-steps']), onEvent: show });
 
   console.log(`\n${r.status === 'completed' ? C.green : C.yellow}■ ${r.status}${C.off}`);
   if (r.answer) console.log(r.answer);
@@ -141,6 +170,10 @@ try {
   }
   if (r.state.denials.length) console.log(`${C.dim}ações negadas: ${r.state.denials.map((d) => `${d.tool} (${d.reason})`).join('; ')}${C.off}`);
   if (model.usage) console.log(`${C.dim}tokens: ${JSON.stringify(model.usage)}${C.off}`);
+  if (recorder) {
+    fs.writeFileSync(path.resolve(opt.record), JSON.stringify(recorder, null, 2) + '\n');
+    console.log(`${C.dim}receita gravada: ${opt.record} (${recorder.toJSON().steps.length} passos)${C.off}`);
+  }
   process.exitCode = r.status === 'completed' || r.status === 'blocked' ? 0 : 2;
 } finally {
   await browser.close();

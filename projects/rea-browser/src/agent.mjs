@@ -79,6 +79,7 @@ export async function runAgent({
   approver = null, // async ({tool, input, reason}) => true | false | 'always'
   asker = null, // async ({question, handoff}) => string | null  (ask_user)
   memory = null, // SiteMemory | null
+  recorder = null, // Recorder | null (grava as ações para repetir sem modelo)
   startUrl = null,
   maxSteps = 40,
   contextBudgetTokens = 120_000,
@@ -88,7 +89,7 @@ export async function runAgent({
   const ledger = new EvidenceLedger();
   const state = { todos: [], notes: [], final: null, lastUrl: null, denials: [], compactions: 0, steps: 0, alwaysAllow: new Set(), memoryShown: new Set() };
   const emit = (e) => onEvent({ t: new Date().toISOString(), ...e });
-  const ctx = { browser, policy, ledger, state, emit, maxSnapshotText, approver, asker, memory };
+  const ctx = { browser, policy, ledger, state, emit, maxSnapshotText, approver, asker, memory, recorder };
   const tools = toolDefinitions();
   browser.setNavigationGuard?.((url) => url === 'about:blank' || policy.checkUrl(url).decision === 'allow');
   browser.setDialogHandler?.(async (d) => {
@@ -212,8 +213,10 @@ async function executeTool(ctx, use) {
     return fail(`Bloqueado pela política: ${verdict.reason}.`);
   }
 
+  const target = use.input.ref ? browser.lastRefs.get(use.input.ref) || null : null;
   try {
     const out = await tool.run(ctx, use.input);
+    ctx.recorder?.onTool(tool.name, use.input, { target, desc });
     emit({ type: 'tool_result', tool: tool.name, ok: true, preview: typeof out === 'string' ? out.slice(0, 300) : '[conteúdo com imagem]' });
     return { type: 'tool_result', tool_use_id: use.id, content: out };
   } catch (e) {

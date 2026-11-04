@@ -131,3 +131,65 @@ test('memória por site: o que uma execução lembra a próxima recebe; injeçã
     fs.rmSync(dir, { recursive: true, force: true });
   }
 });
+
+test('gravar e repetir: a compra gravada roda de novo sem modelo em outro servidor, pelo portão', async () => {
+  const { Recorder, ReplayModel } = await import('../src/replay.mjs');
+  const { demoPilot, DEMO_TASK } = await import('../src/demo.mjs');
+  const recorder = new Recorder({ task: DEMO_TASK, startUrl: site.origin });
+  site.carrinho.length = 0;
+  const r1 = await run({ task: DEMO_TASK, model: demoPilot(), approver: async () => true, recorder });
+  assert.equal(r1.status, 'completed');
+  const rec = JSON.parse(JSON.stringify(recorder)); // passa pelo formato de arquivo
+  assert.deepEqual(rec.steps.map((s) => s.tool), ['navigate', 'click', 'click', 'click']);
+  assert.deepEqual(rec.steps[1].target, { role: 'link', label: 'Teclado Mecânico' });
+  assert.ok(!JSON.stringify(rec).includes('"ref"'), 'refs não podem ir para a gravação');
+
+  // Outro servidor (outra porta = outra origem): a gravação é rebaseada.
+  const other = await startFixtureSite();
+  try {
+    const asked = [];
+    const r2 = await runAgent({
+      task: 'repetir', browser, policy: new Policy(), startUrl: other.origin, maxSteps: 20,
+      model: new ReplayModel(rec, { startUrl: other.origin }),
+      approver: async (q) => (asked.push(q.reason), true),
+    });
+    assert.equal(r2.status, 'completed', r2.answer);
+    assert.equal(other.pedidos.length, 1, 'a compra repetida aconteceu no outro servidor');
+    assert.equal(asked.length, 1, 'e passou pelo portão de novo');
+
+    // Sem aprovação, a repetição para no passo da compra.
+    const r3 = await runAgent({
+      task: 'repetir', browser, policy: new Policy(), startUrl: other.origin, maxSteps: 20,
+      model: new ReplayModel(rec, { startUrl: other.origin }),
+    });
+    assert.equal(r3.status, 'blocked');
+    assert.match(r3.answer, /interrompida no passo 4/);
+    assert.equal(other.pedidos.length, 1);
+  } finally {
+    await other.close();
+  }
+});
+
+test('repetir: alvo sumido para com mensagem clara; senha nunca é gravada', async () => {
+  const { Recorder, ReplayModel } = await import('../src/replay.mjs');
+  const missing = { version: 1, task: 't', startUrl: site.origin, steps: [
+    { tool: 'navigate', input: { url: site.origin + '/produtos' } },
+    { tool: 'click', input: {}, target: { role: 'button', label: 'Botão que não existe' } },
+  ] };
+  const r = await runAgent({ task: 'x', browser, policy: new Policy(), startUrl: site.origin, model: new ReplayModel(missing) });
+  assert.equal(r.status, 'blocked');
+  assert.match(r.answer, /não achei button "Botão que não existe"/);
+
+  const recorder = new Recorder({ startUrl: site.origin });
+  await run({
+    task: 'login', recorder, approver: async () => true,
+    model: new ScriptedModel([
+      () => ({ name: 'navigate', input: { url: site.origin + '/login' } }),
+      (t) => ({ name: 'type', input: { ref: t.match(/\[(e\d+)\] textbox "Senha"/)[1], text: 'hunter2' } }),
+      end,
+    ]),
+  });
+  const json = JSON.stringify(recorder);
+  assert.ok(!json.includes('hunter2'));
+  assert.equal(recorder.toJSON().steps[1].sensitive, true);
+});

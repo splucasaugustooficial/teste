@@ -132,6 +132,7 @@ export class BrowserSession {
     // Sem handler, o Playwright recusa todo confirm() em silêncio. Padrão aqui:
     // alert é aceito (só informa), o resto é recusado — e tudo fica registrado.
     this.dialogHandler = async (d) => d.type === 'alert';
+    this.lastRefs = new Map();
     this.tabs = [];
     this.tabEvents = []; // abas abertas/fechadas desde a última leitura
     this.wire(page);
@@ -293,7 +294,14 @@ export class BrowserSession {
   }
 
   async snapshot({ maxText = 4000 } = {}) {
-    return this.page.evaluate(snapshotInPage, maxText);
+    const snap = await this.page.evaluate(snapshotInPage, maxText);
+    // ref -> {role, label}: o alvo "semântico" que a gravação usa no lugar do ref.
+    this.lastRefs = new Map();
+    for (const line of snap.interactive) {
+      const m = line.match(/^\[(e\d+)\] (\S+) ("(?:[^"\\]|\\.)*")/);
+      if (m) this.lastRefs.set(m[1], { role: m[2], label: JSON.parse(m[3]) });
+    }
+    return snap;
   }
 
   // Tabelas e listas visíveis como dados (estilo "extract" do Stagehand), sem

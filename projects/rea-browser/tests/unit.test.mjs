@@ -155,3 +155,13 @@ test('SiteMemory: deduplica, limita tamanho e separa por origem', async () => {
     fs.rmSync(dir, { recursive: true, force: true });
   }
 });
+
+test('findRef: exato, depois sem caixa/acento, depois contém; papel precisa bater', async () => {
+  const { findRef } = await import('../src/replay.mjs');
+  const snap = '[e1] link "Início" -> /\n[e2] button "Finalizar Compra"\n[e3] link "Finalizar compra"\n[e4] button "Adicionar ao carrinho (2)"';
+  assert.equal(findRef(snap, { role: 'link', label: 'Finalizar compra' }), 'e3');
+  assert.equal(findRef(snap, { role: 'button', label: 'finalizar compra' }), 'e2');
+  assert.equal(findRef(snap, { role: 'link', label: 'inicio' }), 'e1');
+  assert.equal(findRef(snap, { role: 'button', label: 'Adicionar ao carrinho' }), 'e4');
+  assert.equal(findRef(snap, { role: 'textbox', label: 'Finalizar compra' }), null);
+});
