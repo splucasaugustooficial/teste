@@ -74,6 +74,14 @@ export class Policy {
     }
     return { decision: 'allow', reason: `ação comum (modo ${this.mode})` };
   }
+  // Diálogos JS. alert só informa; beforeunload é sair da página (já coberto pela
+  // guarda de navegação); confirm/prompt costumam confirmar algo destrutivo.
+  checkDialog({ type, message }) {
+    if (type === 'alert' || type === 'beforeunload') return { decision: 'allow', reason: `diálogo ${type}` };
+    if (this.mode === 'plan') return { decision: 'deny', reason: `modo plan: diálogo ${type} recusado ("${message}")` };
+    if (this.mode === 'trust') return { decision: 'allow', reason: `diálogo ${type} aceito pelo modo trust ("${message}")` };
+    return { decision: 'ask', reason: `a página pede confirmação (${type}): "${message}"` };
+  }
 }
 
 // Detector simples de injeção de prompt em conteúdo de página. Não é a defesa:

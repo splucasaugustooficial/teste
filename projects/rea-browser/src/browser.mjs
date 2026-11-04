@@ -117,7 +117,31 @@ export class BrowserSession {
     this.contacted = new Set(); // origens que a página atual contatou (só a origem, sem dados)
     this.guard = () => true; // (url) => boolean; o agente liga isto à política
     this.blocked = []; // navegações barradas desde a última leitura
+    this.dialogs = []; // diálogos JS desde a última leitura
+    // Sem handler, o Playwright recusa todo confirm() em silêncio. Padrão aqui:
+    // alert é aceito (só informa), o resto é recusado — e tudo fica registrado.
+    this.dialogHandler = async (d) => d.type === 'alert';
     this.attach(page);
+  }
+
+  setDialogHandler(fn) {
+    this.dialogHandler = fn;
+  }
+
+  takeDialogs() {
+    return this.dialogs.splice(0);
+  }
+
+  async onDialog(dialog) {
+    const info = { type: dialog.type(), message: dialog.message().slice(0, 300) };
+    let accepted = false;
+    try {
+      accepted = Boolean(await this.dialogHandler(info));
+    } finally {
+      // O clique que abriu o diálogo fica parado até ele ser resolvido.
+      await (accepted ? dialog.accept() : dialog.dismiss()).catch(() => {});
+      this.dialogs.push({ ...info, accepted });
+    }
   }
 
   setNavigationGuard(fn) {
@@ -165,6 +189,7 @@ export class BrowserSession {
   attach(page) {
     this.page = page;
     this.contacted.clear();
+    page.on('dialog', (d) => this.onDialog(d));
     // Segunda linha: se algo escapou da guarda (ex.: cadeia de redirecionamentos),
     // registra e volta.
     page.on('framenavigated', (frame) => {

@@ -65,6 +65,16 @@ export async function runAgent({
   const ctx = { browser, policy, ledger, state, emit, maxSnapshotText };
   const tools = toolDefinitions();
   browser.setNavigationGuard?.((url) => url === 'about:blank' || policy.checkUrl(url).decision === 'allow');
+  browser.setDialogHandler?.(async (d) => {
+    const verdict = policy.checkDialog(d);
+    emit({ type: 'dialog', dialog: d.type, message: d.message, decision: verdict.decision, reason: verdict.reason });
+    if (verdict.decision === 'allow') return true;
+    if (verdict.decision === 'deny') return false;
+    const ok = approver ? await approver({ tool: 'dialog', input: d, reason: verdict.reason, target: null }) : false;
+    emit({ type: 'approval', tool: 'dialog', approved: ok, reason: verdict.reason });
+    if (!ok) state.denials.push({ tool: 'dialog', input: d, reason: verdict.reason });
+    return ok;
+  });
 
   let kickoff = `Missão: ${task}`;
   if (startUrl) {

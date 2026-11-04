@@ -127,3 +127,11 @@ test('Enter num campo de texto conta como envio do formulário', () => {
   assert.equal(p.check({ tool: 'type', risk: 'act', input: { ref: 'e1', text: 'x', submit: true }, desc: campo }).decision, 'ask');
   assert.equal(p.check({ tool: 'type', risk: 'act', input: { ref: 'e1', text: 'x' }, desc: campo }).decision, 'allow');
 });
+
+test('diálogos: alert passa, confirm pergunta em default, nega em plan, aceita em trust', () => {
+  const d = { type: 'confirm', message: 'Apagar?' };
+  assert.equal(new Policy().checkDialog({ type: 'alert', message: 'oi' }).decision, 'allow');
+  assert.equal(new Policy().checkDialog(d).decision, 'ask');
+  assert.equal(new Policy({ mode: 'plan' }).checkDialog(d).decision, 'deny');
+  assert.equal(new Policy({ mode: 'trust' }).checkDialog(d).decision, 'allow');
+});

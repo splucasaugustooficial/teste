@@ -19,6 +19,9 @@ export function wrapUntrusted(url, body) {
 
 async function observe(ctx, prefix = '') {
   const snap = await ctx.browser.snapshot({ maxText: ctx.maxSnapshotText });
+  for (const d of ctx.browser.takeDialogs()) {
+    prefix += `A página abriu um diálogo ${d.type}: ${JSON.stringify(d.message)} -> ${d.accepted ? 'aceito' : 'recusado'}.\n`;
+  }
   for (const b of ctx.browser.takeBlocked()) {
     ctx.emit({ type: 'navigation_blocked', ...b });
     prefix += `Navegação bloqueada pela política (${b.via}): ${b.url} está fora do escopo. Se for mesmo necessária, peça com navigate.\n`;
