@@ -47,3 +47,53 @@ test('wait_for: espera o conteúdo atrasado em vez de reler em loop', async () =
   assert.match(seen, /RAIO20/);
   assert.match(fail, /não apareceu em 300 ms/);
 });
+
+test('ask_user: sem humano o agente é avisado; com humano recebe a resposta', async () => {
+  let none = '', answer = '', after = '';
+  const steps = () => [
+    () => ({ name: 'navigate', input: { url: site.origin + '/produtos' } }),
+    () => ({ name: 'ask_user', input: { question: 'Qual produto você prefere?' } }),
+    (t) => ((answer = t), { name: 'ask_user', input: { question: 'Faça login e me avise', handoff: true } }),
+    (t) => ((after = t), end()),
+  ];
+  await run({ task: 'escolher', model: new ScriptedModel([steps()[0], steps()[1], (t) => ((none = t), end())]) });
+  assert.match(none, /não há humano disponível/);
+
+  const asked = [];
+  await run({
+    task: 'escolher',
+    model: new ScriptedModel(steps()),
+    asker: async (q) => {
+      asked.push(q);
+      if (q.handoff) await browser.page.goto(site.origin + '/carrinho'); // o humano navegou
+      return q.handoff ? 'pronto' : 'o monitor';
+    },
+  });
+  assert.equal(asked.length, 2);
+  assert.match(answer, /<user_answer>\no monitor\n<\/user_answer>/);
+  assert.match(after, /devolveu o controle[\s\S]*Título: Carrinho/);
+});
+
+test('aprovar com "sempre" não pergunta de novo a mesma ação na sessão', async () => {
+  site.carrinho.length = 0;
+  const pedidosAntes = site.pedidos.length;
+  const asked = [];
+  const buy = () => [
+    () => ({ name: 'navigate', input: { url: site.origin + '/carrinho' } }),
+    (t) => ({ name: 'click', input: { ref: t.match(/\[(e\d+)\] button "Finalizar compra"/)[1] } }),
+  ];
+  const [nav, click] = buy();
+  const model = new ScriptedModel([nav, click, nav, click, end]);
+  await run({ task: 'comprar duas vezes', model, approver: async (q) => (asked.push(q.reason), 'always') });
+  assert.equal(asked.length, 1);
+  assert.equal(site.pedidos.length, pedidosAntes + 2);
+});
+
+test('"sempre" não vale para campos de senha', async () => {
+  const asked = [];
+  const nav = () => ({ name: 'navigate', input: { url: site.origin + '/login' } });
+  const type = (t) => ({ name: 'type', input: { ref: t.match(/\[(e\d+)\] textbox "Senha"/)[1], text: 'x' } });
+  const model = new ScriptedModel([nav, type, nav, type, end]);
+  await run({ task: 'login', model, approver: async (q) => (asked.push(q.reason), 'always') });
+  assert.equal(asked.length, 2);
+});

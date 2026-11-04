@@ -70,7 +70,11 @@ function show(e) {
       const col = e.decision === 'allow' ? C.green : e.decision === 'ask' ? C.yellow : C.red;
       return console.log(`${col}⏺ ${e.tool}${C.off}(${JSON.stringify(e.input)}) ${C.dim}[${e.decision}: ${e.reason}]${C.off}`);
     }
-    case 'approval': return console.log(`  ${e.approved ? C.green + '✔ aprovado' : C.red + '✘ negado'}${C.off}`);
+    case 'approval': return console.log(`  ${e.approved ? C.green + (e.remembered ? '✔ aprovado (lembrado)' : e.always ? '✔ aprovado para a sessão' : '✔ aprovado') : C.red + '✘ negado'}${C.off}`);
+    case 'dialog': return console.log(`${C.yellow}  ⚑ diálogo ${e.dialog}: ${JSON.stringify(e.message)} [${e.decision}]${C.off}`);
+    case 'navigation_blocked': return console.log(`${C.red}  ⛔ navegação bloqueada (${e.via}): ${e.url}${C.off}`);
+    case 'loop_warning': return console.log(`${C.yellow}  ↺ mesma chamada ${e.repeats}x sem progresso${C.off}`);
+    case 'ask_user': return;
     case 'tool_result': return console.log(`${C.dim}  ⎿ ${e.ok ? e.preview.split('\n').slice(0, 3).join(' | ') : 'erro: ' + e.error}${C.off}`);
     case 'injection_flagged': return console.log(`${C.red}  ⚠ possível injeção de prompt em ${e.url}: ${e.patterns.join(' | ')}${C.off}`);
     case 'compacted': return console.log(`${C.yellow}  ↻ contexto compactado (#${e.count})${C.off}`);
@@ -78,19 +82,33 @@ function show(e) {
   }
 }
 
+async function prompt(text) {
+  const rl = readline.createInterface({ input: process.stdin, output: process.stdout });
+  try {
+    return (await rl.question(text)).trim();
+  } finally {
+    rl.close();
+  }
+}
+
 async function terminalApprover({ tool, input, reason }) {
   if (opt.yes) return true;
   if (!process.stdin.isTTY) return false;
-  const rl = readline.createInterface({ input: process.stdin, output: process.stdout });
-  const a = await rl.question(`${C.yellow}? Permitir ${tool} ${JSON.stringify(input)} — ${reason}? [s/N] ${C.off}`);
-  rl.close();
-  return /^s(im)?$|^y(es)?$/i.test(a.trim());
+  const a = await prompt(`${C.yellow}? Permitir ${tool} ${JSON.stringify(input)} — ${reason}? [s]im / [a] sempre nesta sessão / [N]ão ${C.off}`);
+  if (/^a(lways|sempre)?$/i.test(a)) return 'always';
+  return /^s(im)?$|^y(es)?$/i.test(a);
+}
+
+async function terminalAsker({ question, handoff }) {
+  if (!process.stdin.isTTY) return null;
+  const hint = handoff ? ' (o controle é seu: aja na janela — use --headed — e responda quando terminar)' : '';
+  return prompt(`${C.cyan}? O agente pergunta: ${question}${hint}\n> ${C.off}`);
 }
 
 let site = null;
 const browser = await BrowserSession.launch({ headless: !opt.headed });
 try {
-  let task, model, startUrl, approver;
+  let task, model, startUrl, approver, asker = null;
   if (positionals[0] === 'demo') {
     const { startFixtureSite } = await import('../tests/fixture-site.mjs');
     site = await startFixtureSite();
@@ -103,9 +121,10 @@ try {
     startUrl = opt['start-url'] || null;
     model = new ClaudeModel({ model: opt.model, effort: opt.effort });
     approver = terminalApprover;
+    asker = terminalAsker;
   }
   const policy = new Policy({ mode: opt.mode, allowedOrigins: opt['allow-origin'] });
-  const r = await runAgent({ task, model, browser, policy, approver, startUrl, maxSteps: Number(opt['max-steps']), onEvent: show });
+  const r = await runAgent({ task, model, browser, policy, approver, asker, startUrl, maxSteps: Number(opt['max-steps']), onEvent: show });
 
   console.log(`\n${r.status === 'completed' ? C.green : C.yellow}■ ${r.status}${C.off}`);
   if (r.answer) console.log(r.answer);

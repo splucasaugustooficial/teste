@@ -208,6 +208,23 @@ export const TOOLS = [
     },
   },
   {
+    name: 'ask_user',
+    risk: 'read',
+    description:
+      'Pergunta algo ao humano (uma escolha, um dado que só ele tem) ou, com handoff=true, entrega o controle para ele agir na janela ' +
+      '(login, CAPTCHA, 2FA) e devolver. Use com parcimônia: só quando não dá para seguir sem ele. Não peça senhas para digitar você mesmo.',
+    input_schema: obj({ question: { type: 'string' }, handoff: { type: 'boolean' } }, ['question']),
+    async run(ctx, { question, handoff = false }) {
+      if (!ctx.asker) throw new Error('não há humano disponível nesta sessão. Siga sem essa informação ou encerre com status "blocked" explicando o que falta.');
+      ctx.emit({ type: 'ask_user', question, handoff });
+      const answer = await ctx.asker({ question, handoff });
+      if (answer === null || answer === undefined) throw new Error('o humano não respondeu. Siga sem ou encerre com status "blocked".');
+      const reply = `<user_answer>\n${String(answer).slice(0, 2000)}\n</user_answer>`;
+      // Depois de assumir o controle, a página pode ser outra: relê.
+      return handoff ? observe(ctx, `O humano devolveu o controle. ${reply}\n`) : reply;
+    },
+  },
+  {
     name: 'todo',
     risk: 'read',
     description: 'Mantém a lista de tarefas da missão (substitui a lista inteira). Use em tarefas com 3+ passos; marque in_progress/completed conforme avança.',
