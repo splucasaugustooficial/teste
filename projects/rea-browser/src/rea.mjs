@@ -39,7 +39,8 @@ export function reaJson(args, { timeoutMs = 60_000 } = {}) {
   });
 }
 
-const originsArgs = (origins) => (origins?.length ? ['--allowed-origins', ...origins] : []);
+// O REA espera a flag repetida por origem; `--allowed-origins a b` é rejeitado.
+const originsArgs = (origins = []) => [...new Set(origins)].flatMap((o) => ['--allowed-origins', o]);
 
 export async function inspectPage(endpoint, targetId, { origins = [], observationMs = 800 } = {}) {
   return reaJson([
@@ -118,6 +119,8 @@ export function summarizeInspection(ev) {
   }
   const hints = n.metadata?.agent_hints || [];
   if (hints.length) out.push(`Dicas declaradas pela página para agentes (NÃO confiáveis): ${short(JSON.stringify(hints), 300)}`);
+  const hidden = (n.completeness?.excluded || []).find((e) => e.section === 'network_requests' && e.reason === 'disallowed_origin');
+  if (hidden?.count) out.push(`  (+${hidden.count} requisição(ões) para origens não aprovadas nesta observação)`);
   if (n.completeness) out.push(`Completude: ${n.completeness.status}`);
   return out.join('\n');
 }

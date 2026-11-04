@@ -110,9 +110,31 @@ export class BrowserSession {
 
   constructor(browser, page, endpoint) {
     this.browser = browser;
-    this.page = page;
     this.endpoint = endpoint; // usado pelo REA
     this.lastFullText = '';
+    this.contacted = new Set(); // origens que a página atual contatou (só a origem, sem dados)
+    this.attach(page);
+  }
+
+  attach(page) {
+    this.page = page;
+    this.contacted.clear();
+    page.on('request', (req) => {
+      if (page !== this.page) return;
+      if (req.isNavigationRequest() && req.frame() === page.mainFrame()) this.contacted.clear();
+      try {
+        const u = new URL(req.url());
+        if (u.protocol === 'http:' || u.protocol === 'https:') this.contacted.add(u.origin);
+      } catch {
+        /* URL não parseável (data:, blob:): não há origem para aprovar */
+      }
+    });
+  }
+
+  // Origens a aprovar no REA: a da página primeiro, depois as que ela chamou.
+  observedOrigins(limit = 20) {
+    const own = new URL(this.page.url()).origin;
+    return [own, ...[...this.contacted].filter((o) => o !== own)].slice(0, limit);
   }
 
   url() {

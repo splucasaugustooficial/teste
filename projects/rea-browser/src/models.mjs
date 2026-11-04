@@ -44,7 +44,7 @@ export class ScriptedModel {
       ? last.content.map((b) => (typeof b.content === 'string' ? b.content : Array.isArray(b.content) ? b.content.filter((c) => c.type === 'text').map((c) => c.text).join('\n') : '')).join('\n')
       : last.content;
     const step = this.steps[Math.min(this.i++, this.steps.length - 1)];
-    const out = step(lastText, messages);
+    const out = await step(lastText, messages);
     if (out.text) return { content: [{ type: 'text', text: out.text }], stop_reason: 'end_turn' };
     const calls = Array.isArray(out) ? out : [out];
     return {

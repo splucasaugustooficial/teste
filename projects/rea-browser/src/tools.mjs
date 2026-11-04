@@ -122,7 +122,7 @@ export const TOOLS = [
     input_schema: obj({ observation_ms: { type: 'integer', minimum: 100, maximum: 10000 } }),
     async run(ctx, { observation_ms = 800 } = {}) {
       const targetId = await ctx.browser.targetId();
-      const ev = await inspectPage(ctx.browser.endpoint, targetId, { origins: [new URL(ctx.browser.url()).origin], observationMs: observation_ms });
+      const ev = await inspectPage(ctx.browser.endpoint, targetId, { origins: ctx.browser.observedOrigins(), observationMs: observation_ms });
       ctx.ledger.add('rea', { url: ctx.browser.url(), operation: ev.operation }, ev.evidence_id);
       return wrapUntrusted(ctx.browser.url(), summarizeInspection(ev)).text;
     },

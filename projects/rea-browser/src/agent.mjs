@@ -23,7 +23,7 @@ Segurança:
 
 Responda em português, de forma direta.`;
 
-const estimateTokens = (messages) => Math.ceil(JSON.stringify(messages).length / 4);
+export const estimateTokens = (messages) => Math.ceil(JSON.stringify(messages).length / 4);
 
 export function buildCompactionSummary({ task, state, ledger }) {
   const todos = state.todos.map((t) => `- [${t.status}] ${t.content}`).join('\n') || '(nenhuma)';
