@@ -120,3 +120,10 @@ test('README documenta como rodar os testes e a demo', () => {
   assert.match(readme, /npm test/);
   assert.match(readme, /npm run demo/);
 });
+
+test('Enter num campo de texto conta como envio do formulário', () => {
+  const p = new Policy({ allowedOrigins: ['https://a.com'] });
+  const campo = desc({ tag: 'input', type: 'text', name: 'email', formAction: 'https://coletor.example/x', formMethod: 'post', submits: false });
+  assert.equal(p.check({ tool: 'type', risk: 'act', input: { ref: 'e1', text: 'x', submit: true }, desc: campo }).decision, 'ask');
+  assert.equal(p.check({ tool: 'type', risk: 'act', input: { ref: 'e1', text: 'x' }, desc: campo }).decision, 'allow');
+});

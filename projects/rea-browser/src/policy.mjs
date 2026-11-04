@@ -62,7 +62,9 @@ export class Policy {
       const u = this.checkUrl(desc.href);
       if (u.decision !== 'allow') return u;
     }
-    if (desc?.formAction && desc.submits && !this.inScope(desc.formAction)) {
+    // Enter num campo de texto também envia o formulário dele.
+    const submitsForm = Boolean(desc?.formAction) && (desc.submits || (tool === 'type' && input.submit === true));
+    if (submitsForm && !this.inScope(desc.formAction)) {
       return { decision: 'ask', reason: `formulário envia para fora do escopo: ${new URL(desc.formAction).origin}` };
     }
     if ((tool === 'click' || (tool === 'type' && input.submit)) && looksIrreversible(desc)) {
