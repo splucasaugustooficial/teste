@@ -23,7 +23,20 @@ Segurança:
 
 Responda em português, de forma direta.`;
 
-export const estimateTokens = (messages) => Math.ceil(JSON.stringify(messages).length / 4);
+// ~4 caracteres por token para texto. Imagens custam pela resolução, não pelo
+// tamanho do base64: uma captura de 1280x720 fica perto de 1.600 tokens.
+const IMAGE_TOKENS = 1600;
+export function estimateTokens(messages) {
+  let images = 0;
+  const text = JSON.stringify(messages, (k, v) => {
+    if (v && v.type === 'image' && v.source) {
+      images++;
+      return undefined;
+    }
+    return v;
+  });
+  return Math.ceil(text.length / 4) + images * IMAGE_TOKENS;
+}
 
 export function buildCompactionSummary({ task, state, ledger }) {
   const todos = state.todos.map((t) => `- [${t.status}] ${t.content}`).join('\n') || '(nenhuma)';
