@@ -106,7 +106,7 @@ Python). Rodam no CI em `.github/workflows/mcp-forge.yml`.
 
 ## Projetos de pesquisa em IA
 
-[`projects/`](projects/) reúne quatro projetos sem dependências, cada um com
+[`projects/`](projects/) reúne quatro projetos sem dependências (e o `rea-browser`, em Node), cada um com
 benchmark reproduzível, números publicados e limitações declaradas:
 
 | Projeto | Área | Resultado principal |
@@ -115,3 +115,4 @@ benchmark reproduzível, números publicados e limitações declaradas:
 | [ragbench](projects/ragbench/) | RAG | recall@k favorece chunks grandes; com orçamento de contexto igual a vantagem some |
 | [injection-guard](projects/injection-guard/) | Segurança | F1 0,955 nos dados de treino vs 0,571 em ataques inéditos |
 | [dataset-doctor](projects/dataset-doctor/) | Dados | acha exatamente os problemas plantados, zero alarmes falsos |
+| [rea-browser](projects/rea-browser/) | Agentes / navegador | navegador agêntico no método do Claude Code; percepção pelo REA via CDP, portão de permissões, `done` só com evidência |
